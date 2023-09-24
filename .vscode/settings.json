@@ -1,0 +1,20 @@
+{
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true,
+    },
+    "prettier.trailingComma": "none",
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.autoImportCompletions": true,
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.indentSize": "tabSize",
+        "editor.tabSize": 2,
+    },
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.python",
+        "editor.indentSize": "tabSize",
+        "editor.tabSize": 4
+    },
+}
