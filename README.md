@@ -4,7 +4,7 @@ This is a simple python script that allows you to send data from MediaPipe to a 
 
 ## 環境構築
 
-**`rye`以外使ったことないので分かりませんが、たぶん`rye`以外でもできます。**
+**Python の仮想環境に`rye`以外使ったことないので分かりませんが、たぶん`rye`以外でもできます。**
 
 [rye](https://rye-up.com/guide/installation/)をインストールします。Linux(WSL)の場合は以下。
 
