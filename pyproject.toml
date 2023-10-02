@@ -11,6 +11,7 @@ dependencies = [
   "pylance>=0.7.5",
   "isort>=5.12.0",
   "flake8>=5.0.4",
+  "numpy>=1.24.4",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -24,7 +25,9 @@ managed = true
 dev-dependencies = ["black>=23.9.1"]
 
 [tool.rye.scripts]
-all = "python src/main.py"
+main = "python src/main.py"
+debug = "python src/main.py --debug"
+all = "python src/main.py --debug"
 
 [tool.black]
 line-length = 88

@@ -1,5 +1,8 @@
+#!usr/bin/env python3
+# -*- coding: utf-8 -*-
 import cv2
 import numpy
+from numpy import ndarray
 
 
 def calc_bounding_rect(image, landmarks) -> list[float]:
@@ -20,7 +23,7 @@ def calc_bounding_rect(image, landmarks) -> list[float]:
     return [x, y, x + w, y + h]
 
 
-def draw_bounding_rect(use_brect, image, brect):
+def draw_bounding_rect(use_brect: bool, image: ndarray, brect: list[float]) -> ndarray:
     if use_brect:
         # 外接矩形
         cv2.rectangle(image, (brect[0], brect[1]), (brect[2], brect[3]), (0, 255, 0), 2)
@@ -31,9 +34,8 @@ def draw_bounding_rect(use_brect, image, brect):
 def draw_landmarks(
     image,
     landmarks,
-    # upper_body_only,
     visibility_th=0.5,
-):
+) -> ndarray:
     image_width, image_height = image.shape[1], image.shape[0]
 
     landmark_point = []

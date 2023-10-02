@@ -8,6 +8,8 @@ def get_args() -> argparse.Namespace:
     """Get arguments from command line. Default values are used if not specified."""
 
     parser = argparse.ArgumentParser()
+    # Debug
+    parser.add_argument("--debug", action="store_true")
     # Camera
     parser.add_argument("--device", help="Camera Device Index", type=int, default=0)
     parser.add_argument("--width", help="Camera Capture Width", type=int, default=640)
