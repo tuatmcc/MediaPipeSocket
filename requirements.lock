@@ -27,6 +27,7 @@ mccabe==0.7.0
 mediapipe==0.10.5
 numpy==1.26.0
 opencv-contrib-python==4.8.0.76
+opencv-python==4.8.1.78
 packaging==23.1
 pillow==10.0.1
 platformdirs==3.10.0
