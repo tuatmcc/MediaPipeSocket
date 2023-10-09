@@ -41,6 +41,7 @@ pylance==0.7.5
 pyparsing==3.1.1
 pyproject-api==1.6.1
 python-dateutil==2.8.2
+scipy==1.11.3
 six==1.16.0
 sounddevice==0.4.6
 tox==4.11.3
