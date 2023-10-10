@@ -3,17 +3,17 @@
     "editor.codeActionsOnSave": {
         "source.fixAll": true,
     },
-    "prettier.trailingComma": "none",
     "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.include": [
+        "src/**/*.py",
+        ".venv/lib/*",
+        "venv/lib/*",
+        "env/lib/*",
+    ],
     "python.analysis.autoSearchPaths": true,
     "python.analysis.autoImportCompletions": true,
-    "[json]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.indentSize": "tabSize",
-        "editor.tabSize": 2,
-    },
     "[python]": {
-        "editor.defaultFormatter": "ms-python.python",
+        "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.indentSize": "tabSize",
         "editor.tabSize": 4
     },
