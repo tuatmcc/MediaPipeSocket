@@ -10,10 +10,10 @@ This is a simple python script that allows you to send data from MediaPipe to a 
 
 複数方法があります。
 
-- [`pip`でグローバルにパッケージをインストールする方法](#`pip`でグローバルにパッケージをインストールする方法): 一番簡単ではあります。
-- [`pip`で仮想環境にパッケージをインストールする方法](#`pip`で仮想環境にパッケージをインストールする方法): 仮想環境を使うことで、他のプロジェクトとの衝突を防ぐことができます。
-- [`rye`で仮想環境にパッケージをインストールする方法](#`rye`で仮想環境にパッケージをインストールする方法): より整備された仮想環境を使うことができます。この方法で作成されたため、この方法を推奨します。
-- `poetry`で仮想環境にパッケージをインストールする方法: `pyproject.toml`があるのでたぶん使えます。
+- [`pip`でグローバルにパッケージをインストールする方法](#`pip`でグローバルにパッケージをインストールする方法): 簡単ですが非推奨。
+- [`venv`と`pip`で仮想環境にパッケージをインストールする方法](#`pip`で仮想環境にパッケージをインストールする方法): 仮想環境を使うことで、他のプロジェクトと PyPI パッケージの衝突を防ぐことができます。Python の標準です。推奨
+- [`rye`で仮想環境にパッケージをインストールする方法](#`rye`で仮想環境にパッケージをインストールする方法): これで作成されました。上記よりプロジェクト管理および Python 環境管理に優れます。オススメです.
+- `poetry`で仮想環境にパッケージをインストールする方法: 未検証です。
 - その他仮想環境を使う方法: 自分でやってください。
 
 **注意**: 以下の`python`コマンドは、`python3`です。`python`が`python2`の場合は、`python3`に置き換えてください。
@@ -22,14 +22,16 @@ This is a simple python script that allows you to send data from MediaPipe to a 
 
 ### `pip`でグローバルにパッケージをインストールする方法
 
-`requirements.lock`に記載されているパッケージをインストールします。
+`pip install -r requirements.lock`で`requirements.lock`に記載されているパッケージをインストールします。
 
-### `pip`で仮想環境にパッケージをインストールする方法
+まったくオススメしません。
+
+### `venv`と`pip`で仮想環境にパッケージをインストールする方法
 
 ```bash
-python -m pip install virtualenv
-python -m venv venv
-pip install -r requirements.lock
+python -m venv .venv
+pip install -r requirements.lock # 依存関係をインストール
+source .venv/bin/activate # 仮想環境に入る
 ```
 
 ### `rye`で仮想環境にパッケージをインストールする方法
@@ -40,7 +42,7 @@ pip install -r requirements.lock
 curl -sSf https://rye-up.com/get | bash
 ```
 
-公式のインストールガイドでは、この後`echo 'source "$HOME/.rye/env"' >> ~/.bashrc`を実行するように書かれていますが、これを実行すると、既存の Python の環境と衝突する可能性があります。
+~~公式のインストールガイドでは、この後`echo 'source "$HOME/.rye/env"' >> ~/.bashrc`を実行するように書かれていますが、これを実行すると、既存の Python の環境と衝突する可能性があります。~~ WSL で検証したところ、必要そうでした。
 
 ```bash
 rye sync # 依存関係をインストール
@@ -49,16 +51,16 @@ rye shell # 仮想環境に入る
 
 ## 使い方
 
-`src/main.py`を実行します。
-
-```bash
-python src/main.py
-```
-
-or
+`mediapipe_socket/__main__.py`に実行部分があります。
 
 ```bash
 rye run main
 ```
 
-`--debug`オプションをつけると、キャプチャした様子をウィンドウに表示します。`--help`オプションでその他のオプションを確認できます。
+or
+
+```bash
+python mediapipe_socket
+```
+
+`--debug`オプションをつけると、キャプチャした様子をウィンドウに表示します。`-h`オプションでその他のオプションを確認できます。
