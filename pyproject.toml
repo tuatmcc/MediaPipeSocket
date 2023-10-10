@@ -6,13 +6,15 @@ authors = [
   { name = "OJII3", email = "84656786+OJII3@users.noreply.github.com" },
 ]
 dependencies = [
-    "mediapipe>=0.10.5",
-    "tox>=4.11.3",
-    "pylance>=0.7.5",
-    "isort>=5.12.0",
-    "flake8>=5.0.4",
-    "numpy>=1.24.4",
-    "opencv-python>=4.8.1.78",
+  "mediapipe>=0.10.5",
+  "tox>=4.11.3",
+  "pylance>=0.7.5",
+  "isort>=5.12.0",
+  "flake8>=5.0.4",
+  "numpy>=1.24.4",
+  "opencv-python>=4.8.1.78",
+  "scipy>=1.10.1",
+  "typed-argument-parser>=1.8.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -26,9 +28,9 @@ managed = true
 dev-dependencies = ["black>=23.9.1"]
 
 [tool.rye.scripts]
-main = "python src/main.py"
-debug = "python src/main.py --debug"
-all = "python src/main.py --debug"
+main = "python mediapipe_socket"
+debug = "python mediapipe_socket --debug"
+all = "python mediapipe_socket --debug"
 
 [tool.black]
 line-length = 88
