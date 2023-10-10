@@ -2,7 +2,7 @@
 
 This is a simple python script that allows you to send data from MediaPipe to a UDP socket.
 
-ウェブカメラを起動し、メディアパイプポーズで全身のポーズ検出、取得された体のランドマーク(三次元座標+visibility)を自身の UDP ソケットに送信します。
+ウェブカメラを起動し、メディアパイプポーズで全身のポーズ検出、取得された体の 33 個のランドマーク(三次元座標+visibility)を自身の UDP ソケットに送信します。
 
 デフォルトではローカルホストのポート 5000 に送信されます。
 
@@ -16,9 +16,9 @@ This is a simple python script that allows you to send data from MediaPipe to a 
 - `poetry`で仮想環境にパッケージをインストールする方法: 未検証です。
 - その他仮想環境を使う方法: 自分でやってください。
 
-**注意**: 以下の`python`コマンドは、`python3`です。`python`が`python2`の場合は、`python3`に置き換えてください。
+**注意**: 以下の`python`コマンドは、`python3`です。自分の環境に応じて`py`や`python3`に置き換えてください。
 
-以下に一部方法の説明を示します。`rye`以外は動作確認していません。
+2, 3 の方法は動作確認済み。`pip`のバージョンが古いと動かないかもしれません。
 
 ### `pip`でグローバルにパッケージをインストールする方法
 
@@ -36,7 +36,7 @@ source .venv/bin/activate # 仮想環境に入る
 
 ### `rye`で仮想環境にパッケージをインストールする方法
 
-[rye](https://rye-up.com/guide/installation/)をインストールします。Linux(WSL)の場合は以下。
+[rye](https://rye-up.com/guide/installation/)をインストールします。Linux(WSL)の場合は以下。Windows の場合公式から `.exe` ファイルをダウンロードしてください。(`cargo`でビルドでも可)
 
 ```bash
 curl -sSf https://rye-up.com/get | bash
