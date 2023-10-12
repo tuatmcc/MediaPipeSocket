@@ -1,21 +1,52 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import time
+
 import cv2
 import numpy
 from numpy import ndarray
 
+from filters import GaussianFilter
 from mediapipe_wrapper import Landmark
 
 
 class Visualizer:
-    def __init__(self, use_brect: bool):
+    def __init__(self, use_brect: bool, winname: str = "MediaPipe Pose Demo"):
         self.image_output: ndarray | None = None
         self.use_brect: bool = use_brect
+        self.winname: str = winname
+        self.last_frame_time: float = time.time()
+        self.fps: GaussianFilter = GaussianFilter(30, 5)
+
+        cv2.namedWindow(self.winname, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(self.winname, cv2.WINDOW_FULLSCREEN, cv2.WINDOW_NORMAL)
+
+    def __del__(self):
+        cv2.destroyWindow(self.winname)
 
     def show(self) -> None:
-        if self.image_output is not None:
-            cv2.imshow("MediaPipe Pose Demo", self.image_output)
-            self.image_output = None
+        if self.image_output is None:
+            return
+
+        cv2.imshow(self.winname, self.image_output)
+        self.image_output = None
+        return
+
+    def display_fps(self, image: ndarray) -> None:
+        now = time.time()
+        current_fps = self.fps.update(1 / (now - self.last_frame_time))
+        self.last_frame_time = now
+        image = cv2.putText(
+            image,
+            str(f"FPS: {current_fps:.2f}"),
+            (0, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.0,
+            (0, 255, 0),
+            2,
+            cv2.LINE_AA,
+        )
+        self.image_output = image
         return
 
     def update(
@@ -24,43 +55,38 @@ class Visualizer:
         landmarks: list[Landmark],
         color: tuple[int, int, int] = (0, 255, 0),
     ) -> None:
-        # 外接矩形の計算
-        brect = self.__calc_bounding_rect(image, landmarks)
-
         # 描画
-        self.image_output = self.__draw_bounding_rect(self.use_brect, image, brect)
+        self.image_output = self.__draw_bounding_rect(
+            self.use_brect, image, landmarks, color=color
+        )
         self.image_output = self.__draw_landmarks(
             self.image_output, landmarks, color=color
         )
         return
 
-    def __calc_bounding_rect(
-        self, image: ndarray, landmarks: list[Landmark]
-    ) -> list[int]:
-        image_width, image_height = image.shape[1], image.shape[0]
-
-        landmark_array = numpy.empty((0, 2), int)
-
-        for _, landmark in enumerate(landmarks):
-            landmark_x = min(int(landmark["x"] * image_width), image_width - 1)
-            landmark_y = min(int(landmark["y"] * image_height), image_height - 1)
-
-            landmark_point = [numpy.array((landmark_x, landmark_y))]
-
-            landmark_array = numpy.append(landmark_array, landmark_point, axis=0)
-
-        x, y, w, h = cv2.boundingRect(landmark_array)
-
-        return [x, y, x + w, y + h]
-
     def __draw_bounding_rect(
-        self, use_brect: bool, image: ndarray, brect: list[int]
+        self,
+        use_brect: bool,
+        image: ndarray,
+        landmarks: list[Landmark],
+        color=(0, 255, 0),
     ) -> ndarray:
         if use_brect:
+            image_width, image_height = image.shape[1], image.shape[0]
+
+            landmark_array = numpy.empty((0, 2), int)
+
+            for _, landmark in enumerate(landmarks):
+                landmark_x = min(int(landmark["x"] * image_width), image_width - 1)
+                landmark_y = min(int(landmark["y"] * image_height), image_height - 1)
+
+                landmark_point = [numpy.array((landmark_x, landmark_y))]
+
+                landmark_array = numpy.append(landmark_array, landmark_point, axis=0)
+
+            x, y, w, h = cv2.boundingRect(landmark_array)
             # 外接矩形
-            cv2.rectangle(
-                image, (brect[0], brect[1]), (brect[2], brect[3]), (0, 225, 0), 2
-            )
+            cv2.rectangle(image, (x, y), (w, h), color, 2)
 
         return image
 

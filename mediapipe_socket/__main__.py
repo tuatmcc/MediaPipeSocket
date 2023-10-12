@@ -1,6 +1,6 @@
-import args
-import runner
+from args import get_args
+from runner import run_mediapipe_socket
 
 if __name__ == "__main__":
-    args = args.get_args()
-    runner.run_mediapipe_socket(args)
+    args = get_args()
+    run_mediapipe_socket(args)

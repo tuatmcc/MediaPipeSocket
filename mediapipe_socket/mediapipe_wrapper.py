@@ -8,20 +8,23 @@ from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 from mediapipe.python.solutions import pose as mp_pose
 from numpy import ndarray
 
-Landmark = TypedDict(
-    "Landmark",
-    {
-        "x": float,
-        "y": float,
-        "z": float,
-        "visibility": float,
-    },
-)
+
+class Landmark(TypedDict):
+    x: float
+    y: float
+    z: float
+    visibility: float
 
 
 class MediaPipePose(mp_pose.Pose):
     def process(self, image: ndarray) -> list[Landmark] | None:
-        """Process an RGB image and return the pose landmarks."""
+        """
+        Process an RGB image and return the pose landmarks.
+
+        Args:
+
+        image: A three channel RGB image represented as numpy ndarray.
+        """
         result: NamedTuple = super().process(image)
         if result.pose_landmarks is None:  # type: ignore
             return None

@@ -3,14 +3,13 @@
 
 from typing import TypedDict
 
-from scipy.ndimage import gaussian_filter
-
 from mediapipe_wrapper import Landmark
+from scipy.ndimage import gaussian_filter
 
 
 class GaussianFilter:
     """
-    ガウス畳み込みを用いたフィルタ(ガウシアンフィルタ)
+    ガウシアンフィルタ
     """
 
     def __init__(self, sample_size: int, sigma: float, init_value: float = 0.0):
@@ -36,6 +35,10 @@ class GaussianFilter:
 
 
 class LandmarkComposiion(TypedDict):
+    """
+    ランドマークの各座標についてガウシアンフィルタを保持するクラス
+    """
+
     x: GaussianFilter
     y: GaussianFilter
     z: GaussianFilter
@@ -43,13 +46,17 @@ class LandmarkComposiion(TypedDict):
 
 
 class PoseLandmarkComposition:
+    """
+    MediaPipePoseの出力値(33個のランドマーク)について、各座標についてガウシアンフィルタを保持するクラス
+    """
+
     def __init__(self):
         self.filters: list[LandmarkComposiion] = [
             {
-                "x": GaussianFilter(200, 6, 0.0),
-                "y": GaussianFilter(200, 6, 0.0),
-                "z": GaussianFilter(200, 6, 0.0),
-                "visibility": GaussianFilter(100, 0.6, 0.0),
+                "x": GaussianFilter(200, 4, 0.0),
+                "y": GaussianFilter(200, 4, 0.0),
+                "z": GaussianFilter(200, 4, 0.0),
+                "visibility": GaussianFilter(200, 4, 0.0),
             }
             for _ in range(33)
         ]
