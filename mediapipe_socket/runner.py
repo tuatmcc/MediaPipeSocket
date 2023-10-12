@@ -7,7 +7,7 @@ import cv2
 from numpy import ndarray
 
 from args import ArgParser
-from filtering import PoseLandmarkComposition
+from filters import PoseLandmarkComposition
 from json_parser import to_json
 from mediapipe_wrapper import Landmark, MediaPipePose
 from udp_client import UdpClient
@@ -66,7 +66,7 @@ def run_mediapipe_socket(args: ArgParser) -> None:
 
             if pose_landmarks is not None:
                 # フィルタ適用 #######################################################
-                filterd_landmarks = pose_filter.update(pose_landmarks)
+                filterd_landmarks = pose_filter.update(copy.deepcopy(pose_landmarks))
 
                 # UDP送信 ############################################################
                 message = to_json(pose_landmarks).encode("utf-8")
@@ -89,11 +89,13 @@ def run_mediapipe_socket(args: ArgParser) -> None:
                         filterd_landmarks,
                         color=(0, 0, 255),
                     )
+                    visualizer.display_fps(debug_image)
                     visualizer.show()
 
                     # キー処理(ESC：終了) ############################################
                     key = cv2.waitKey(1)
                     if key == 27:  # ESC
+                        print("exit")
                         break
 
         except KeyboardInterrupt:
@@ -104,4 +106,3 @@ def run_mediapipe_socket(args: ArgParser) -> None:
             break
 
     cap.release()
-    cv2.destroyAllWindows()
