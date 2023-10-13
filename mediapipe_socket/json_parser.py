@@ -12,12 +12,11 @@ def to_json(landmarks: list[Landmark]) -> str:
     return json.dumps(
         [
             {
-                "id": index,
                 "x": landmark["x"],
                 "y": landmark["y"],
                 "z": landmark["z"],
                 "visibility": landmark["visibility"],
             }
-            for index, landmark in enumerate(landmarks)
+            for landmark in landmarks
         ]
     )

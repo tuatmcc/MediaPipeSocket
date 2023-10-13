@@ -28,9 +28,8 @@ managed = true
 dev-dependencies = ["black>=23.9.1"]
 
 [tool.rye.scripts]
-main = "python mediapipe_socket"
-debug = "python mediapipe_socket --debug"
-all = "python mediapipe_socket --debug"
+min = "python mediapipe_socket --no_visualize --no_lpf"
+all = "python mediapipe_socket"
 
 [tool.black]
 line-length = 88

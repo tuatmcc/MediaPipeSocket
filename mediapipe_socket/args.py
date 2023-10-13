@@ -7,7 +7,8 @@ import tap as typed_argment_parser
 class ArgParser(typed_argment_parser.Tap):
     """Typed Argument parser."""
 
-    debug: bool = False  # enable visualizations
+    no_visualize: bool = False  # enable visualizations
+    no_lpf: bool = False  # enable low pass filter
     device: int = 0  # camera device index
     width: int = 640  # camera capture width
     height: int = 480  # camera capture height

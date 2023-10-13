@@ -16,7 +16,8 @@ from visualizer import Visualizer
 
 def run_mediapipe_socket(args: ArgParser) -> None:
     # 引数解析
-    debug = args.debug
+    no_visualize: bool = args.no_visualize
+    no_lpf: bool = args.no_lpf
     cap_device = args.device
     cap_width: int = args.width
     cap_height: int = args.height
@@ -36,10 +37,10 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cap_height)
 
     # ビジュアライザ
-    visualizer = Visualizer(use_brect)
+    visualizer = Visualizer(use_brect) if not no_visualize else None
 
     # ポーズ用のローパスフィルタ
-    pose_filter = PoseLandmarkComposition()
+    pose_filter = PoseLandmarkComposition() if not no_lpf else None
 
     # モデルロード
     pose = MediaPipePose(
@@ -66,29 +67,34 @@ def run_mediapipe_socket(args: ArgParser) -> None:
 
             if pose_landmarks is not None:
                 # フィルタ適用 #######################################################
-                filterd_landmarks = pose_filter.update(copy.deepcopy(pose_landmarks))
+                processed_landmarks: list[Landmark] = copy.deepcopy(pose_landmarks)
+                if not no_lpf and pose_filter is not None:
+                    processed_landmarks = pose_filter.update(
+                        copy.deepcopy(pose_landmarks)
+                    )
 
                 # UDP送信 ############################################################
-                message = to_json(pose_landmarks).encode("utf-8")
+                message = to_json(processed_landmarks).encode("utf-8")
                 udpClient.send(
                     message,
                     ("localhost", target_port),
                 )
 
                 # 描画 ################################################################
-                if debug:
+                if not no_visualize and visualizer is not None:
                     # オリジナル
                     visualizer.update(
                         debug_image,
                         pose_landmarks,
                         color=(0, 255, 0),
                     )
-                    # フィルタ適用後
-                    visualizer.update(
-                        debug_image,
-                        filterd_landmarks,
-                        color=(0, 0, 255),
-                    )
+                    if not no_lpf and pose_filter is not None:
+                        # フィルタ適用後
+                        visualizer.update(
+                            debug_image,
+                            processed_landmarks,
+                            color=(0, 0, 255),
+                        )
                     visualizer.display_fps(debug_image)
                     visualizer.show()
 
