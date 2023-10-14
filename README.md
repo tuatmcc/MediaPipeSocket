@@ -2,7 +2,7 @@
 
 This is a simple python script that allows you to send data from MediaPipe to a UDP socket.
 
-ウェブカメラを起動し、メディアパイプポーズで全身のポーズ検出、取得された体の 33 個のランドマーク(三次元座標+visibility)を自身の UDP ソケットに送信します。
+ウェブカメラを起動し、メディアパイプポーズで全身のポーズ検出、取得された体の 33 個のランドマーク(三次元座標+visibility)をローパスフィルター「通して自身の UDP ソケットに送信します。
 
 デフォルトではローカルホストのポート 5000 に送信されます。
 
@@ -54,7 +54,7 @@ rye shell # 仮想環境に入る
 `mediapipe_socket/__main__.py`に実行部分があります。
 
 ```bash
-rye run main
+rye run all
 ```
 
 or
