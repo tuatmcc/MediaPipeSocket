@@ -5,9 +5,11 @@ from typing import Tuple, List
 import copy
 
 import cv2
+import keyboard
 from numpy import ndarray
 
 from args import ArgParser
+from debug import loadDebugImages, changeImage
 from filters import PoseLandmarkComposition
 from json_parser import to_json
 from mediapipe_wrapper import Landmark, MediaPipePose
@@ -83,6 +85,25 @@ def exitLoop(keyCode: int) -> bool:
         return False
 
 
+def launchDebug(images: List[ndarray], visualizer: Visualizer | None, pose: MediaPipePose, filter: PoseLandmarkComposition | None, noLPF: bool) -> None:
+    image: ndarray = changeImage(images)
+    landmarks, processed = applyFilter(pose, copy.deepcopy(image), filter, noLPF)
+
+    if processed is not None:
+        #sendData(processed_landmarks, udpClient)
+        draw(visualizer, image, landmarks, processed, noLPF)
+
+
+def launchCamera(camera: cv2.VideoCapture, visualizer: Visualizer | None, pose: MediaPipePose, filter: PoseLandmarkComposition | None, noLPF: bool) -> None:
+    # カメラキャプチャ #####################################################
+    image, debugImage = getImage(camera)
+    landmarks, processed_landmarks = applyFilter(pose, image, filter, noLPF)
+
+    if processed_landmarks is not None:
+        #sendData(processed_landmarks, udpClient)
+        draw(visualizer, debugImage, landmarks, processed_landmarks, noLPF)
+
+
 def run_mediapipe_socket(args: ArgParser) -> None:
     # 引数解析
     no_visualize: bool = args.no_visualize
@@ -93,6 +114,9 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     min_tracking_confidence: float = args.min_tracking_confidence
     enable_segmentation: bool = args.enable_segmentation
     use_brect: bool = args.use_brect
+
+    # Load debug images
+    debugImages: List[ndarray] = loadDebugImages()
 
     # UDP Client (for sending data)
     udpClient = UDPClient(HOST_ADDRESS, args.port)
@@ -114,20 +138,25 @@ def run_mediapipe_socket(args: ArgParser) -> None:
         min_tracking_confidence=min_tracking_confidence,
     )
 
+    debugging: bool = False
+
     while True:
         try:
-            # カメラキャプチャ #####################################################
-            image, debugImage = getImage(camera)
-
-            landmarks, processed_landmarks = applyFilter(pose, image, pose_filter, no_lpf)
-
-            if processed_landmarks is not None:
-                #sendData(processed_landmarks, udpClient)
-                draw(visualizer, debugImage, landmarks, processed_landmarks, no_lpf)
+            if debugging:
+                launchDebug(debugImages, visualizer, pose, pose_filter, no_lpf)
+            else:
+                launchCamera(camera, visualizer, pose, pose_filter, no_lpf)
 
             # キー処理(ESC：終了) ############################################
             if exitLoop(27):
                 break
+
+            if keyboard.is_pressed("F1"):
+                debugging = True
+            elif keyboard.is_pressed("F2"):
+                debugging = False
+            else:
+                pass
 
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
