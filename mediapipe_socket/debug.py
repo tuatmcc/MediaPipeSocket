@@ -9,21 +9,23 @@ from PIL import Image
 import keyboard
 
 filenames: List[str] = [
-    #"T-pose"
+    "T-pose",
+    "X-pose"
 ]
 
 def loadDebugImages() -> List[ndarray]:
     images: List[ndarray] = []
     for name in filenames:
-        rawData = Image.open("./debugImage/{}.png".format(name))
+        rawData = Image.open("mediapipe_socket/debugImages/{}.png".format(name))
+        rawData = rawData.convert("RGB")
         images.append(array(rawData))
     return images
 
 
-def changeImage(debugImages: List[ndarray]) -> ndarray:
-    for i in range(len(debugImages)):
-        if keyboard.is_pressed("{i}"):
-            return debugImages[i]
+def changeImage(index: int, length: int) -> int:
+    for i in range(length):
+        if keyboard.is_pressed(str(i)):
+            return i
         else:
             pass
-    return debugImages[-1]
+    return index

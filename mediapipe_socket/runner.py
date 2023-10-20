@@ -85,22 +85,22 @@ def exitLoop(keyCode: int) -> bool:
         return False
 
 
-def launchDebug(images: List[ndarray], visualizer: Visualizer | None, pose: MediaPipePose, filter: PoseLandmarkComposition | None, noLPF: bool) -> None:
-    image: ndarray = changeImage(images)
-    landmarks, processed = applyFilter(pose, copy.deepcopy(image), filter, noLPF)
+def launchDebug(image: ndarray, visualizer: Visualizer | None, pose: MediaPipePose, filter: PoseLandmarkComposition | None, client: UDPClient, noLPF: bool) -> None:
+    debugImage: ndarray = image.copy()
+    landmarks, processed = applyFilter(pose, image, filter, noLPF)
 
     if processed is not None:
-        #sendData(processed_landmarks, udpClient)
-        draw(visualizer, image, landmarks, processed, noLPF)
+        #sendData(processed, client)
+        draw(visualizer, debugImage, landmarks, processed, noLPF)
 
 
-def launchCamera(camera: cv2.VideoCapture, visualizer: Visualizer | None, pose: MediaPipePose, filter: PoseLandmarkComposition | None, noLPF: bool) -> None:
+def launchCamera(camera: cv2.VideoCapture, visualizer: Visualizer | None, pose: MediaPipePose, filter: PoseLandmarkComposition | None, client: UDPClient, noLPF: bool) -> None:
     # カメラキャプチャ #####################################################
     image, debugImage = getImage(camera)
     landmarks, processed_landmarks = applyFilter(pose, image, filter, noLPF)
 
     if processed_landmarks is not None:
-        #sendData(processed_landmarks, udpClient)
+        #sendData(processed_landmarks, client)
         draw(visualizer, debugImage, landmarks, processed_landmarks, noLPF)
 
 
@@ -139,13 +139,15 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     )
 
     debugging: bool = False
+    index: int = 0
 
     while True:
         try:
             if debugging:
-                launchDebug(debugImages, visualizer, pose, pose_filter, no_lpf)
+                index = changeImage(index, len(debugImages))
+                launchDebug(debugImages[index], visualizer, pose, pose_filter, udpClient, no_lpf)
             else:
-                launchCamera(camera, visualizer, pose, pose_filter, no_lpf)
+                launchCamera(camera, visualizer, pose, pose_filter, udpClient, no_lpf)
 
             # キー処理(ESC：終了) ############################################
             if exitLoop(27):
