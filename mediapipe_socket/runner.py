@@ -10,7 +10,7 @@ from args import ArgParser
 from filters import PoseLandmarkComposition
 from json_parser import to_json
 from mediapipe_wrapper import Landmark, MediaPipePose
-from udp_client import UdpClient
+from udp_client import UDPClient, HOST_ADDRESS
 from visualizer import Visualizer
 
 
@@ -29,7 +29,7 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     use_brect: bool = args.use_brect
 
     # UDP Client (for sending data)
-    udpClient = UdpClient()
+    udpClient = UDPClient(HOST_ADDRESS, args.port)
 
     # カメラ
     cap = cv2.VideoCapture(cap_device)
@@ -75,10 +75,7 @@ def run_mediapipe_socket(args: ArgParser) -> None:
 
                 # UDP送信 ############################################################
                 message = to_json(processed_landmarks).encode("utf-8")
-                udpClient.send(
-                    message,
-                    ("localhost", target_port),
-                )
+                udpClient.send(message)
 
                 # 描画 ################################################################
                 if not no_visualize and visualizer is not None:
