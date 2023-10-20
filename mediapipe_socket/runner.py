@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Tuple, List
 import copy
 
 import cv2
@@ -14,14 +15,79 @@ from udp_client import UDPClient, HOST_ADDRESS
 from visualizer import Visualizer
 
 
+def getCamera(capDevice: int, capWidth: int, capHeight: int) -> cv2.VideoCapture:
+    # カメラ
+    cap = cv2.VideoCapture(capDevice)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, capWidth)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, capHeight)
+    return cap
+
+
+def getImage(camera: cv2.VideoCapture) -> Tuple[ndarray, ndarray]:
+    ret, image = camera.read()
+    if not ret:
+        raise ValueError("No camera detected.")
+    
+    image = cv2.flip(image, 1)
+    debugImage = image.copy()
+    image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+    return image, debugImage
+
+
+def applyFilter(pose: MediaPipePose, image: ndarray, filter: PoseLandmarkComposition | None, noLPF: bool) -> Tuple[List[Landmark] | None, List[Landmark] | None]:
+    # 検出実施 #############################################################
+    landmarks: list[Landmark] | None = pose.process(image)
+    processed_landmarks: list[Landmark] | None = None
+
+    if landmarks is None:
+        return None, None
+    else:
+        processed_landmarks: list[Landmark] | None = copy.deepcopy(landmarks)
+
+    if not noLPF:
+        # フィルタ適用 #######################################################
+        if filter is not None:
+            processed_landmarks = filter.update(processed_landmarks)
+
+    return landmarks, processed_landmarks
+
+
+def sendData(data: List[Landmark], client: UDPClient) -> None:
+    message = to_json(data).encode("utf-8")
+    client.send(message)
+
+
+def draw(visualizer: Visualizer | None, debugImage: ndarray, landmarks: List[Landmark] | None, processed: List[Landmark], noLPF: bool) -> None:
+    if visualizer is None:
+        return None
+    
+    if landmarks is not None:
+        # オリジナル
+        visualizer.update(debugImage, landmarks, (0, 255, 0))
+
+    if not noLPF:
+        # フィルタ適用後
+        visualizer.update(debugImage, processed, (255, 0, 0))
+
+    visualizer.display_fps(debugImage)
+    visualizer.show()
+
+
+def exitLoop(keyCode: int) -> bool:
+    # キー処理(ESC：終了) ############################################
+    key = cv2.waitKey(1)
+    if key == keyCode:  # ESC
+        print("exit")
+        return True
+    else:
+        return False
+
+
 def run_mediapipe_socket(args: ArgParser) -> None:
     # 引数解析
     no_visualize: bool = args.no_visualize
     no_lpf: bool = args.no_lpf
-    cap_device = args.device
-    cap_width: int = args.width
-    cap_height: int = args.height
-    target_port: int = args.port
+
     model_complexity: int = args.model_complexity
     min_detection_confidence: float = args.min_detection_confidence
     min_tracking_confidence: float = args.min_tracking_confidence
@@ -32,9 +98,7 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     udpClient = UDPClient(HOST_ADDRESS, args.port)
 
     # カメラ
-    cap = cv2.VideoCapture(cap_device)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, cap_width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cap_height)
+    camera: cv2.VideoCapture = getCamera(args.device, args.width, args.height)
 
     # ビジュアライザ
     visualizer = Visualizer(use_brect) if not no_visualize else None
@@ -53,53 +117,17 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     while True:
         try:
             # カメラキャプチャ #####################################################
-            ret, image = cap.read()
-            if not ret:
-                print("No Camera")
+            image, debugImage = getImage(camera)
+
+            landmarks, processed_landmarks = applyFilter(pose, image, pose_filter, no_lpf)
+
+            if processed_landmarks is not None:
+                #sendData(processed_landmarks, udpClient)
+                draw(visualizer, debugImage, landmarks, processed_landmarks, no_lpf)
+
+            # キー処理(ESC：終了) ############################################
+            if exitLoop(27):
                 break
-
-            image: ndarray = cv2.flip(image, 1)  # ミラー表示
-            debug_image: ndarray = copy.deepcopy(image)
-
-            # 検出実施 #############################################################
-            image: ndarray = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            pose_landmarks: list[Landmark] | None = pose.process(image)
-
-            if pose_landmarks is not None:
-                # フィルタ適用 #######################################################
-                processed_landmarks: list[Landmark] = copy.deepcopy(pose_landmarks)
-                if not no_lpf and pose_filter is not None:
-                    processed_landmarks = pose_filter.update(
-                        copy.deepcopy(pose_landmarks)
-                    )
-
-                # UDP送信 ############################################################
-                message = to_json(processed_landmarks).encode("utf-8")
-                udpClient.send(message)
-
-                # 描画 ################################################################
-                if not no_visualize and visualizer is not None:
-                    # オリジナル
-                    visualizer.update(
-                        debug_image,
-                        pose_landmarks,
-                        color=(0, 255, 0),
-                    )
-                    if not no_lpf and pose_filter is not None:
-                        # フィルタ適用後
-                        visualizer.update(
-                            debug_image,
-                            processed_landmarks,
-                            color=(0, 0, 255),
-                        )
-                    visualizer.display_fps(debug_image)
-                    visualizer.show()
-
-                    # キー処理(ESC：終了) ############################################
-                    key = cv2.waitKey(1)
-                    if key == 27:  # ESC
-                        print("exit")
-                        break
 
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
@@ -108,4 +136,4 @@ def run_mediapipe_socket(args: ArgParser) -> None:
             print(err)
             break
 
-    cap.release()
+    camera.release()
