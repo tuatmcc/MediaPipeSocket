@@ -1,3 +1,9 @@
 {
-  "include": ["src/**/*", "./.venv/lib/**/*", "venv/lib/**/*"]
+  "include": [
+    "mediapipe_socket/**/*",
+    "./.venv/lib/**/*",
+    "venv/lib/**/*",
+    "test/**/*"
+  ],
+  "reportImplicitOverride": "information"
 }
