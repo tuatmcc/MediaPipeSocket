@@ -1,8 +1,10 @@
 {
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
         "source.fixAll": true,
     },
+    "python.languageServer": "Pylance",
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.include": [
         "src/**/*.py",
@@ -17,20 +19,20 @@
         "editor.indentSize": "tabSize",
         "editor.tabSize": 4
     },
-    "flake8.path": [
-        ".venv/bin/flake8",
-        "venv/bin/flake8",
-        "env/bin/flake8",
+    "isort.args": [
+        "--profile=black"
     ],
-    "flake8.severity": {
+    "isort.check": true,
+    "isort.severity": {
         "E": "Error",
-        "F": "Error",
-        "I": "Information",
-        "W": "Warning"
+        "W": "Warning",
     },
-    "flake8.args": [
-        "--max-line-length=120",
-        "--ignore=E203,E266,E501,W503",
-        "--exclude=.venv",
-    ],
+    "flake8.severity": {
+        "convention": "Information",
+        "error": "Error",
+        "fatal": "Information",
+        "refactor": "Hint",
+        "warning": "Warning",
+        "info": "Information"
+    },
 }
