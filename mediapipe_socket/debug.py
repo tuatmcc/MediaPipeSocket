@@ -6,8 +6,6 @@ from typing import List
 from numpy import ndarray, array
 from PIL import Image
 
-import keyboard
-
 filenames: List[str] = [
     "T-pose",
     "X-pose"
@@ -22,9 +20,9 @@ def loadDebugImages() -> List[ndarray]:
     return images
 
 
-def changeImage(index: int, length: int) -> int:
+def changeImage(index: int, length: int, key: int) -> int:
     for i in range(length):
-        if keyboard.is_pressed(str(i)):
+        if key == 48 + i:
             return i
         else:
             pass
