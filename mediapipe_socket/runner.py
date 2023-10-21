@@ -5,7 +5,6 @@ from typing import Tuple, List
 import copy
 
 import cv2
-import keyboard
 from numpy import ndarray
 
 from args import ArgParser
