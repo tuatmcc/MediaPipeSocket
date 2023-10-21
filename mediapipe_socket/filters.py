@@ -3,8 +3,9 @@
 
 from typing import TypedDict
 
-from mediapipe_wrapper import Landmark
 from scipy.ndimage import gaussian_filter
+
+from mediapipe_wrapper import Landmark
 
 
 class GaussianFilter:

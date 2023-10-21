@@ -3,15 +3,12 @@
 
 from typing import List
 
-from numpy import ndarray, array
+import keyboard
+from numpy import array, ndarray
 from PIL import Image
 
-import keyboard
+filenames: List[str] = ["T-pose", "X-pose"]
 
-filenames: List[str] = [
-    "T-pose",
-    "X-pose"
-]
 
 def loadDebugImages() -> List[ndarray]:
     images: List[ndarray] = []
