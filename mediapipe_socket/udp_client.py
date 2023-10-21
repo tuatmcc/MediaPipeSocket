@@ -2,6 +2,7 @@ import socket
 
 HOST_ADDRESS: str = "192.168.0.254"
 
+
 class UDPClient:
     def __init__(self, host: str, port: int):
         self.address = (host, port)

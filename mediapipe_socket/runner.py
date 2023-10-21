@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Tuple, List
 import copy
+from typing import List, Tuple
 
 import cv2
 import keyboard
 from numpy import ndarray
 
 from args import ArgParser
-from debug import loadDebugImages, changeImage
+from debug import changeImage, loadDebugImages
 from filters import PoseLandmarkComposition
 from json_parser import to_json
 from mediapipe_wrapper import Landmark, MediaPipePose
-from udp_client import UDPClient, HOST_ADDRESS
+from udp_client import HOST_ADDRESS, UDPClient
 from visualizer import Visualizer
 
 
@@ -29,14 +29,19 @@ def getImage(camera: cv2.VideoCapture) -> Tuple[ndarray, ndarray]:
     ret, image = camera.read()
     if not ret:
         raise ValueError("No camera detected.")
-    
+
     image = cv2.flip(image, 1)
     debugImage = image.copy()
     image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
     return image, debugImage
 
 
-def applyFilter(pose: MediaPipePose, image: ndarray, filter: PoseLandmarkComposition | None, noLPF: bool) -> Tuple[List[Landmark] | None, List[Landmark] | None]:
+def applyFilter(
+    pose: MediaPipePose,
+    image: ndarray,
+    filter: PoseLandmarkComposition | None,
+    noLPF: bool,
+) -> Tuple[List[Landmark] | None, List[Landmark] | None]:
     # 検出実施 #############################################################
     landmarks: list[Landmark] | None = pose.process(image)
     processed_landmarks: list[Landmark] | None = None
@@ -59,10 +64,16 @@ def sendData(data: List[Landmark], client: UDPClient) -> None:
     client.send(message)
 
 
-def draw(visualizer: Visualizer | None, debugImage: ndarray, landmarks: List[Landmark] | None, processed: List[Landmark], noLPF: bool) -> None:
+def draw(
+    visualizer: Visualizer | None,
+    debugImage: ndarray,
+    landmarks: List[Landmark] | None,
+    processed: List[Landmark],
+    noLPF: bool,
+) -> None:
     if visualizer is None:
         return None
-    
+
     if landmarks is not None:
         # オリジナル
         visualizer.update(debugImage, landmarks, (0, 255, 0))
@@ -85,22 +96,36 @@ def exitLoop(keyCode: int) -> bool:
         return False
 
 
-def launchDebug(image: ndarray, visualizer: Visualizer | None, pose: MediaPipePose, filter: PoseLandmarkComposition | None, client: UDPClient, noLPF: bool) -> None:
+def launchDebug(
+    image: ndarray,
+    visualizer: Visualizer | None,
+    pose: MediaPipePose,
+    filter: PoseLandmarkComposition | None,
+    client: UDPClient,
+    noLPF: bool,
+) -> None:
     debugImage: ndarray = image.copy()
     landmarks, processed = applyFilter(pose, image, filter, noLPF)
 
     if processed is not None:
-        #sendData(processed, client)
+        # sendData(processed, client)
         draw(visualizer, debugImage, landmarks, processed, noLPF)
 
 
-def launchCamera(camera: cv2.VideoCapture, visualizer: Visualizer | None, pose: MediaPipePose, filter: PoseLandmarkComposition | None, client: UDPClient, noLPF: bool) -> None:
+def launchCamera(
+    camera: cv2.VideoCapture,
+    visualizer: Visualizer | None,
+    pose: MediaPipePose,
+    filter: PoseLandmarkComposition | None,
+    client: UDPClient,
+    noLPF: bool,
+) -> None:
     # カメラキャプチャ #####################################################
     image, debugImage = getImage(camera)
     landmarks, processed_landmarks = applyFilter(pose, image, filter, noLPF)
 
     if processed_landmarks is not None:
-        #sendData(processed_landmarks, client)
+        # sendData(processed_landmarks, client)
         draw(visualizer, debugImage, landmarks, processed_landmarks, noLPF)
 
 
@@ -145,7 +170,9 @@ def run_mediapipe_socket(args: ArgParser) -> None:
         try:
             if debugging:
                 index = changeImage(index, len(debugImages))
-                launchDebug(debugImages[index], visualizer, pose, pose_filter, udpClient, no_lpf)
+                launchDebug(
+                    debugImages[index], visualizer, pose, pose_filter, udpClient, no_lpf
+                )
             else:
                 launchCamera(camera, visualizer, pose, pose_filter, udpClient, no_lpf)
 
