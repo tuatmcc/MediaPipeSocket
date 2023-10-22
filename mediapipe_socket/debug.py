@@ -7,21 +7,24 @@ import keyboard
 from numpy import array, ndarray
 from PIL import Image
 
-filenames: List[str] = ["T-pose", "X-pose"]
+filenames: List[str] = [
+    "T-pose.png",
+    "X-pose.png"
+]
 
 
 def loadDebugImages() -> List[ndarray]:
-    images: List[ndarray] = []
+    images: list[ndarray] = []
     for name in filenames:
-        rawData = Image.open("mediapipe_socket/debugImages/{}.png".format(name))
+        rawData = Image.open("mediapipe_socket/debugImages/{}".format(name))
         rawData = rawData.convert("RGB")
         images.append(array(rawData))
     return images
 
 
-def changeImage(index: int, length: int) -> int:
+def changeImage(index: int, length: int, key: int) -> int:
     for i in range(length):
-        if keyboard.is_pressed(str(i)):
+        if key == 48 + i:
             return i
         else:
             pass
