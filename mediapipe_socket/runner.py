@@ -5,7 +5,6 @@ import copy
 from typing import List, Tuple
 
 import cv2
-import keyboard
 from numpy import ndarray
 
 from args import ArgParser
@@ -86,10 +85,18 @@ def draw(
     visualizer.show()
 
 
-def exitLoop(keyCode: int) -> bool:
+def changeMode(key: int) -> bool | None:
+    if key == 100: #D
+        return True
+    elif key == 114: #R
+        return False
+    else:
+        return None
+
+
+def exitLoop(key: int) -> bool:
     # キー処理(ESC：終了) ############################################
-    key = cv2.waitKey(1)
-    if key == keyCode:  # ESC
+    if key == 27:  # ESC
         print("exit")
         return True
     else:
@@ -168,24 +175,25 @@ def run_mediapipe_socket(args: ArgParser) -> None:
 
     while True:
         try:
+            key = cv2.waitKey(1)
+
             if debugging:
-                index = changeImage(index, len(debugImages))
+                index = changeImage(index, len(debugImages), key)
                 launchDebug(
                     debugImages[index], visualizer, pose, pose_filter, udpClient, no_lpf
                 )
             else:
                 launchCamera(camera, visualizer, pose, pose_filter, udpClient, no_lpf)
 
-            # キー処理(ESC：終了) ############################################
-            if exitLoop(27):
-                break
-
-            if keyboard.is_pressed("F1"):
-                debugging = True
-            elif keyboard.is_pressed("F2"):
-                debugging = False
-            else:
+            mode = changeMode(key)
+            if mode is None:
                 pass
+            else:
+                debugging = mode
+
+            # キー処理(ESC：終了) ############################################
+            if exitLoop(key):
+                break
 
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
