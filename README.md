@@ -4,7 +4,7 @@ This is a simple python script that allows you to send data from MediaPipe to a 
 
 ウェブカメラを起動し、メディアパイプポーズで全身のポーズ検出、取得された体の 33 個のランドマーク(三次元座標+visibility)をローパスフィルターを通して自身の UDP ソケットに送信します。
 
-デフォルトではローカルホストのポート 5000 に送信されます。
+デフォルトではローカルホストのポート 8080 に送信されます。
 
 ## 環境構築
 
