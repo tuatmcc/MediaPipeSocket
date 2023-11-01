@@ -3,7 +3,6 @@
 
 from typing import List
 
-import keyboard
 from numpy import array, ndarray
 from PIL import Image
 
