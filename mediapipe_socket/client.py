@@ -8,10 +8,11 @@ HOST_ADDRESS: str = "192.168.0.254"
 class Client:
     def __init__(self, addr: str = HOST_ADDRESS, port: int = 8080) -> None:
         self.address: str = "/pose"
+        self.builder: OscMessageBuilder = OscMessageBuilder(self.address)
         self.client: UDPClient = UDPClient(addr, port)
 
     def Send(self, data: list[list[float]]) -> None:
-        builder: OscMessageBuilder = OscMessageBuilder(self.address)
-        builder.add_arg(data)
-        msg: OscMessage = builder.build()
+        self.builder._args = []
+        self.builder.add_arg(data)
+        msg: OscMessage = self.builder.build()
         self.client.send(msg)
