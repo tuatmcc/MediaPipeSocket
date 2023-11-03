@@ -38,8 +38,26 @@ source .venv/bin/activate # 仮想環境に入る
 
 [rye](https://rye-up.com/guide/installation/)をインストールします。Linux(WSL)の場合は以下。Windows の場合公式から `.exe` ファイルをダウンロードしてください。(`cargo`でビルドでも可)
 
+- WSL Ubuntu
+
 ```bash
 curl -sSf https://rye-up.com/get | bash
+```
+
+- Windows
+```pwsh
+scoop install rye
+```
+
+- ArchLinux
+
+```
+yay -S rye
+```
+
+- Mac or Any Other Linux
+```
+brew install rye
 ```
 
 ~~公式のインストールガイドでは、この後`echo 'source "$HOME/.rye/env"' >> ~/.bashrc`を実行するように書かれていますが、これを実行すると、既存の Python の環境と衝突する可能性があります。~~ WSL で検証したところ、必要そうでした。
