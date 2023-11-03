@@ -3,7 +3,6 @@
 
 from typing import List
 
-import keyboard
 from numpy import array, ndarray
 from PIL import Image
 
@@ -14,7 +13,7 @@ filenames: List[str] = [
 
 
 def loadDebugImages() -> List[ndarray]:
-    images: List[ndarray] = []
+    images: list[ndarray] = []
     for name in filenames:
         rawData = Image.open("mediapipe_socket/debugImages/{}".format(name))
         rawData = rawData.convert("RGB")

@@ -8,11 +8,10 @@ import cv2
 from numpy import ndarray
 
 from args import ArgParser
+from client import HOST_ADDRESS, Client
 from debug import changeImage, loadDebugImages
 from filters import PoseLandmarkComposition
-from json_parser import to_json
 from mediapipe_wrapper import Landmark, MediaPipePose
-from udp_client import HOST_ADDRESS, UDPClient
 from visualizer import Visualizer
 
 
@@ -58,9 +57,12 @@ def applyFilter(
     return landmarks, processed_landmarks
 
 
-def sendData(data: List[Landmark], client: UDPClient) -> None:
-    message = to_json(data).encode("utf-8")
-    client.send(message)
+def sendData(data: list[Landmark], client: Client) -> None:
+    converted: list[list[float]] = [
+        [landmark["x"], landmark["y"], landmark["z"], landmark["visibility"]]
+        for landmark in data
+    ]
+    client.Send(converted)
 
 
 def draw(
@@ -86,9 +88,9 @@ def draw(
 
 
 def changeMode(key: int) -> bool | None:
-    if key == 100: #D
+    if key == 100:  # D
         return True
-    elif key == 114: #R
+    elif key == 114:  # R
         return False
     else:
         return None
@@ -108,14 +110,14 @@ def launchDebug(
     visualizer: Visualizer | None,
     pose: MediaPipePose,
     filter: PoseLandmarkComposition | None,
-    client: UDPClient,
+    client: Client,
     noLPF: bool,
 ) -> None:
     debugImage: ndarray = image.copy()
     landmarks, processed = applyFilter(pose, image, filter, noLPF)
 
     if processed is not None:
-        # sendData(processed, client)
+        sendData(processed, client)
         draw(visualizer, debugImage, landmarks, processed, noLPF)
 
 
@@ -124,7 +126,7 @@ def launchCamera(
     visualizer: Visualizer | None,
     pose: MediaPipePose,
     filter: PoseLandmarkComposition | None,
-    client: UDPClient,
+    client: Client,
     noLPF: bool,
 ) -> None:
     # カメラキャプチャ #####################################################
@@ -132,7 +134,7 @@ def launchCamera(
     landmarks, processed_landmarks = applyFilter(pose, image, filter, noLPF)
 
     if processed_landmarks is not None:
-        # sendData(processed_landmarks, client)
+        sendData(processed_landmarks, client)
         draw(visualizer, debugImage, landmarks, processed_landmarks, noLPF)
 
 
@@ -151,7 +153,7 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     debugImages: List[ndarray] = loadDebugImages()
 
     # UDP Client (for sending data)
-    udpClient = UDPClient(HOST_ADDRESS, args.port)
+    udpClient = Client(HOST_ADDRESS, args.port)
 
     # カメラ
     camera: cv2.VideoCapture = getCamera(args.device, args.width, args.height)
