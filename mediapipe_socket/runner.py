@@ -8,7 +8,7 @@ import cv2
 from numpy import ndarray
 
 from args import ArgParser
-from client import HOST_ADDRESS, Client
+from client import Client
 from debug import changeImage, loadDebugImages
 from filters import PoseLandmarkComposition
 from mediapipe_wrapper import Landmark, MediaPipePose
@@ -153,7 +153,7 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     debugImages: List[ndarray] = loadDebugImages()
 
     # UDP Client (for sending data)
-    udpClient = Client(HOST_ADDRESS, args.port)
+    udpClient = Client(args.ip_address, args.port)
 
     # カメラ
     camera: cv2.VideoCapture = getCamera(args.device, args.width, args.height)

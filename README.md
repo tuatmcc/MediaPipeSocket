@@ -69,7 +69,7 @@ rye shell # 仮想環境に入る
 
 ## 使い方
 
-`mediapipe_socket/__main__.py`に実行部分があります。
+### 指定のIPに固定してある場合(本番用)
 
 ```bash
 rye run all
@@ -81,7 +81,19 @@ or
 python mediapipe_socket
 ```
 
-`--debug`オプションをつけると、キャプチャした様子をウィンドウに表示します。`-h`オプションでその他のオプションを確認できます。
+### ローカルホストで動かす場合(開発用)
+
+```
+rye run local
+```
+
+or
+
+```
+python mediapipe_socket --ip_address "127.0.0.1"
+```
+
+`-h`オプションで利用可能なコマンドライン引数を確認できます。
 
 ## デバックモードと通常モードの切り替え
 
