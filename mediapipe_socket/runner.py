@@ -8,7 +8,7 @@ import cv2
 from numpy import ndarray
 
 from args import ArgParser
-from client import HOST_ADDRESS, Client
+from client import Client
 from debug import changeImage, loadDebugImages
 from filters import PoseLandmarkComposition
 from mediapipe_wrapper import Landmark, MediaPipePose

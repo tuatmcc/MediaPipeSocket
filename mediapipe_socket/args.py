@@ -3,6 +3,8 @@
 
 import tap as typed_argment_parser
 
+from client import HOST_ADDRESS
+
 
 class ArgParser(typed_argment_parser.Tap):
     """Typed Argument parser."""
@@ -12,7 +14,7 @@ class ArgParser(typed_argment_parser.Tap):
     device: int = 0  # camera device index
     width: int = 640  # camera capture width
     height: int = 480  # camera capture height
-    ip_address: string = "192.168.0.254" # ip address to send messages to
+    ip_address: str = HOST_ADDRESS  # ip address to send messages to
     port: int = 8080  # target UDP port
     model_complexity: int = 1  # model complexity (0, 1(default), 2)
     min_detection_confidence: float = 0.5  # min_detection_confidence
