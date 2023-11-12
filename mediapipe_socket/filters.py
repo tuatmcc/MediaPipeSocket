@@ -54,10 +54,10 @@ class PoseLandmarkComposition:
     def __init__(self):
         self.filters: list[LandmarkComposiion] = [
             {
-                "x": GaussianFilter(200, 4, 0.0),
-                "y": GaussianFilter(200, 4, 0.0),
-                "z": GaussianFilter(200, 4, 0.0),
-                "visibility": GaussianFilter(200, 4, 0.0),
+                "x": GaussianFilter(50, 2, 0.0),
+                "y": GaussianFilter(50, 2, 0.0),
+                "z": GaussianFilter(50, 2, 0.0),
+                "visibility": GaussianFilter(50, 2, 0.0),
             }
             for _ in range(33)
         ]
