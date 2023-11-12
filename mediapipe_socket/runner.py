@@ -11,6 +11,7 @@ from args import ArgParser
 from client import Client
 from debug import changeImage, loadDebugImages
 from filters import PoseLandmarkComposition
+from introduce import getFrame, loadVideoFiles, showVideoFrame
 from mediapipe_wrapper import Landmark, MediaPipePose
 from visualizer import Visualizer
 
@@ -47,16 +48,6 @@ def getImage(camera: cv2.VideoCapture) -> Tuple[ndarray, ndarray]:
     debugImage = image.copy()
     image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
     return image, debugImage
-
-
-def getFrame(video: cv2.VideoCapture) -> ndarray:
-    ret, image = video.read()
-    if not ret:
-        video.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        ret, image = video.read()
-    else:
-        pass
-    return image
 
 
 def applyFilter(
@@ -117,8 +108,6 @@ def changeMode(key: int) -> int | None:
         return STATES.DEBUG
     elif key == 114:  # R
         return STATES.GAME
-    elif key == 105:  # I
-        return STATES.VIDEO
     else:
         return None
 
@@ -166,13 +155,11 @@ def launchCamera(
 
 
 def launchIntroduce(
-    video: cv2.VideoCapture,
-    visualizer: Visualizer | None
-) -> None:
-    image = getFrame(video)
-    if visualizer is not None:
-        visualizer.image_output = image
-        visualizer.show()
+    videos: list[cv2.VideoCapture], visualizer: Visualizer, index: int
+) -> int:
+    frame, index = getFrame(videos, index)
+    showVideoFrame(frame, visualizer)
+    return index
 
 
 def run_mediapipe_socket(args: ArgParser) -> None:
@@ -185,13 +172,12 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     min_tracking_confidence: float = args.min_tracking_confidence
     enable_segmentation: bool = args.enable_segmentation
     use_brect: bool = args.use_brect
-    videoPath: str = args.video
 
     # Load debug images
     debugImages: List[ndarray] = loadDebugImages()
 
-    # Load introduction video
-    video: cv2.VideoCapture = getVideo(videoPath, args.width, args.height)
+    # Load intro videos
+    introVideos: list[cv2.VideoCapture] = loadVideoFiles()
 
     # UDP Client (for sending data)
     udpClient = Client(args.ip_address, args.port)
@@ -201,6 +187,9 @@ def run_mediapipe_socket(args: ArgParser) -> None:
 
     # ビジュアライザ
     visualizer = Visualizer(use_brect) if not no_visualize else None
+
+    # Video visualizer
+    videoVisualizer = Visualizer(False, "Intro video")
 
     # ポーズ用のローパスフィルタ
     pose_filter = PoseLandmarkComposition() if not no_lpf else None
@@ -214,24 +203,30 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     )
 
     state: int = STATES.GAME
-    index: int = 0
+    imageIndex: int = 0
+    videoIndex: int = 0
 
     while True:
         try:
             key = cv2.waitKey(1)
+            launchIntroduce(introVideos, videoVisualizer, videoIndex)
 
             match state:
-                case STATES.VIDEO:
-                    launchIntroduce(video, visualizer)
-
                 case STATES.DEBUG:
-                    index = changeImage(index, len(debugImages), key)
+                    index = changeImage(imageIndex, len(debugImages), key)
                     launchDebug(
-                        debugImages[index], visualizer, pose, pose_filter, udpClient, no_lpf
+                        debugImages[index],
+                        visualizer,
+                        pose,
+                        pose_filter,
+                        udpClient,
+                        no_lpf,
                     )
 
                 case STATES.GAME:
-                    launchCamera(camera, visualizer, pose, pose_filter, udpClient, no_lpf)
+                    launchCamera(
+                        camera, visualizer, pose, pose_filter, udpClient, no_lpf
+                    )
 
                 case _:
                     pass
