@@ -15,9 +15,24 @@ from mediapipe_wrapper import Landmark, MediaPipePose
 from visualizer import Visualizer
 
 
+class STATES:
+    VIDEO: int = 0
+    DEBUG: int = 1
+    GAME: int = 2
+
+
 def getCamera(capDevice: int, capWidth: int, capHeight: int) -> cv2.VideoCapture:
     # カメラ
     cap = cv2.VideoCapture(capDevice)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, capWidth)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, capHeight)
+    return cap
+
+
+def getVideo(file: str, capWidth: int, capHeight: int) -> cv2.VideoCapture:
+    # 紹介動画
+    path: str = "mediapipe_socket/videos/{}".format(file)
+    cap = cv2.VideoCapture(path)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, capWidth)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, capHeight)
     return cap
@@ -32,6 +47,16 @@ def getImage(camera: cv2.VideoCapture) -> Tuple[ndarray, ndarray]:
     debugImage = image.copy()
     image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
     return image, debugImage
+
+
+def getFrame(video: cv2.VideoCapture) -> ndarray:
+    ret, image = video.read()
+    if not ret:
+        video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        ret, image = video.read()
+    else:
+        pass
+    return image
 
 
 def applyFilter(
@@ -87,11 +112,13 @@ def draw(
     visualizer.show()
 
 
-def changeMode(key: int) -> bool | None:
+def changeMode(key: int) -> int | None:
     if key == 100:  # D
-        return True
+        return STATES.DEBUG
     elif key == 114:  # R
-        return False
+        return STATES.GAME
+    elif key == 105:  # I
+        return STATES.VIDEO
     else:
         return None
 
@@ -138,6 +165,16 @@ def launchCamera(
         draw(visualizer, debugImage, landmarks, processed_landmarks, noLPF)
 
 
+def launchIntroduce(
+    video: cv2.VideoCapture,
+    visualizer: Visualizer | None
+) -> None:
+    image = getFrame(video)
+    if visualizer is not None:
+        visualizer.image_output = image
+        visualizer.show()
+
+
 def run_mediapipe_socket(args: ArgParser) -> None:
     # 引数解析
     no_visualize: bool = args.no_visualize
@@ -148,9 +185,13 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     min_tracking_confidence: float = args.min_tracking_confidence
     enable_segmentation: bool = args.enable_segmentation
     use_brect: bool = args.use_brect
+    videoPath: str = args.video
 
     # Load debug images
     debugImages: List[ndarray] = loadDebugImages()
+
+    # Load introduction video
+    video: cv2.VideoCapture = getVideo(videoPath, args.width, args.height)
 
     # UDP Client (for sending data)
     udpClient = Client(args.ip_address, args.port)
@@ -172,26 +213,34 @@ def run_mediapipe_socket(args: ArgParser) -> None:
         min_tracking_confidence=min_tracking_confidence,
     )
 
-    debugging: bool = False
+    state: int = STATES.GAME
     index: int = 0
 
     while True:
         try:
             key = cv2.waitKey(1)
 
-            if debugging:
-                index = changeImage(index, len(debugImages), key)
-                launchDebug(
-                    debugImages[index], visualizer, pose, pose_filter, udpClient, no_lpf
-                )
-            else:
-                launchCamera(camera, visualizer, pose, pose_filter, udpClient, no_lpf)
+            match state:
+                case STATES.VIDEO:
+                    launchIntroduce(video, visualizer)
 
-            mode = changeMode(key)
-            if mode is None:
+                case STATES.DEBUG:
+                    index = changeImage(index, len(debugImages), key)
+                    launchDebug(
+                        debugImages[index], visualizer, pose, pose_filter, udpClient, no_lpf
+                    )
+
+                case STATES.GAME:
+                    launchCamera(camera, visualizer, pose, pose_filter, udpClient, no_lpf)
+
+                case _:
+                    pass
+
+            s = changeMode(key)
+            if s is None:
                 pass
             else:
-                debugging = mode
+                state = s
 
             # キー処理(ESC：終了) ############################################
             if exitLoop(key):

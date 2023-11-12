@@ -22,6 +22,7 @@ class ArgParser(typed_argment_parser.Tap):
     enable_segmentation: bool = False  # enable segmentation
     segmentation_score_th: float = 0.5  # segmentation_score_threshold
     use_brect: bool = False  # use bounding rect
+    video: str = "example.mp4"  # introduce video path
 
 
 def get_args() -> ArgParser:
