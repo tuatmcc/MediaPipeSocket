@@ -2,7 +2,7 @@ from pythonosc.osc_message import OscMessage
 from pythonosc.osc_message_builder import OscMessageBuilder
 from pythonosc.udp_client import UDPClient
 
-HOST_ADDRESS: str = "192.168.0.254"
+HOST_ADDRESS: str = "127.0.0.1"
 
 
 class Client:
