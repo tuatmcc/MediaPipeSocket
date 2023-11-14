@@ -116,3 +116,11 @@ filenames: List[str] = [
     #ここに追加(拡張子も書いてください。)
 ]
 ```
+
+## 開発環境
+
+- `pylance(pyright)`: 言語サーバー・型チェッカー
+- `black`: フォーマッター
+- `isort`: importのソート
+- `flake8`: リンター
+- `tox`: 自動化
