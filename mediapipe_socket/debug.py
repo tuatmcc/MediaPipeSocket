@@ -6,10 +6,7 @@ from typing import List
 from numpy import array, ndarray
 from PIL import Image
 
-filenames: List[str] = [
-    "T-pose.png",
-    "X-pose.png"
-]
+filenames: List[str] = ["T-pose.png", "X-pose.png"]
 
 
 def loadDebugImages() -> List[ndarray]:
