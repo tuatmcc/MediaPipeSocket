@@ -112,6 +112,8 @@ python-dateutil==2.9.0.post0
     # via matplotlib
 python-osc==1.8.3
     # via mediapipe-test
+ruff==0.3.7
+    # via mediapipe-test
 scipy==1.13.0
     # via jax
     # via mediapipe-test
