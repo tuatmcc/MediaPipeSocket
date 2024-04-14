@@ -49,6 +49,12 @@ curl -sSf https://rye-up.com/get | bash
 scoop install rye
 ```
 
+or
+
+```
+cargo install --git https://github.com/astral-sh/rye rye
+```
+
 - ArchLinux
 
 ```
