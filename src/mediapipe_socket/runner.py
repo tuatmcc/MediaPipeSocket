@@ -2,18 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import copy
-from typing import List, Tuple
-
 import cv2
 from numpy import ndarray
-
-# from args import ArgParser
-# from client import Client
-# from debug import changeImage, loadDebugImages
-# from filters import PoseLandmarkComposition
-# from introduce import getFrame, loadVideoFiles, showVideoFrame
-# from mediapipe_wrapper import Landmark, MediaPipePose
-# from visualizer import Visualizer
 
 from args import ArgParser
 from client import Client, CreateClient
