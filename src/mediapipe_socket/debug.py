@@ -7,15 +7,15 @@ from numpy import array, ndarray
 from PIL import Image
 
 filenames: List[str] = [
-    "T-pose.png",
-    "X-pose.png"
+    "image_0.png",
+    "image_1.png"
 ]
 
 
 def loadDebugImages() -> List[ndarray]:
     images: list[ndarray] = []
     for name in filenames:
-        rawData = Image.open("src/mediapipe_socket/debugImages/{}".format(name))
+        rawData = Image.open("./src/images/{}".format(name))
         rawData = rawData.convert("RGB")
         images.append(array(rawData))
     return images
