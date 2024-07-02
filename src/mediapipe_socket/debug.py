@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from numpy import array, ndarray, array_equal
+from numpy import array, ndarray
 
 from PIL import Image
 import cv2
@@ -14,14 +14,14 @@ def loadDebugImages() -> list[ndarray]:
     images: list[ndarray] = []
     for name in filenames:
         cvrawData = cv2.imread(f"./src/images/{name}")
+        # cvrawData = cv2.cvtColor(cvrawData, cv2.COLOR_BGR2RGB)
+
         print(cvrawData.shape)
         rawData = Image.open(f"./src/images/{name}")
         rawData = rawData.convert("RGB")
         rawData = array(rawData)
-        # rawData = array(rawData[:, :, ::-1])
-        # print(rawData.shape)
-        # print(array_equal(rawData, cvrawData))
-        images.append(rawData)
+        print(rawData.shape)
+        images.append(cvrawData)
     return images
 
 
