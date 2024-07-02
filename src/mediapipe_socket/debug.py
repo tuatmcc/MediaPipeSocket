@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List
-
 from numpy import array, ndarray
-from PIL import Image
 
-filenames: List[str] = [
-    "image_0.png",
-    "image_1.png"
-]
+# from PIL import Image
+from cv2 import imread
+import os
+
+filenames: list[str] = os.listdir("./src/images")
 
 
-def loadDebugImages() -> List[ndarray]:
+def loadDebugImages() -> list[ndarray]:
     images: list[ndarray] = []
     for name in filenames:
-        rawData = Image.open("./src/images/{}".format(name))
-        rawData = rawData.convert("RGB")
+        rawData = imread(f"./src/images/{name}")
         images.append(array(rawData))
     return images
 
