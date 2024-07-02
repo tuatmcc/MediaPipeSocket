@@ -10,7 +10,7 @@ filenames: list[str] = ["example.mp4"]
 
 def loadVideoFiles() -> list[cv2.VideoCapture]:
     videos: list[cv2.VideoCapture] = []
-    pathbase: str = "mediapipe_socket/videos/{}"
+    pathbase: str = "videos/{}"
     for name in filenames:
         fmtpath = pathbase.format(name)
         cap = cv2.VideoCapture(fmtpath)

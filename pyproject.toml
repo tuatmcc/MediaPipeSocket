@@ -35,10 +35,10 @@ managed = true
 dev-dependencies = ["black>=23.9.1"]
 
 [tool.rye.scripts]
-min = "python mediapipe_socket --no_visualize --no_lpf"
-all = "python mediapipe_socket"
-local = "python mediapipe_socket --ip_address 127.0.0.1"
-local-min = "python mediapipe_socket --ip_address 127.0.0.1 --no_visualize --no_lpf"
+min = "python src/mediapipe_socket --no_visualize --no_lpf"
+all = "python src/mediapipe_socket"
+local = "python src/mediapipe_socket --ip_address 127.0.0.1"
+local-min = "python src/mediapipe_socket --ip_address 127.0.0.1 --no_visualize --no_lpf"
 ci = "tox"
 
 [tool.hatch.metadata]
