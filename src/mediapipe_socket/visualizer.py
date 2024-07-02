@@ -19,7 +19,7 @@ class Visualizer:
         self.fps: GaussianFilter = GaussianFilter(30, 5)
 
         cv2.namedWindow(self.winname, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(self.winname, cv2.WINDOW_FULLSCREEN, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(self.winname, 1500, 750)
 
     def __del__(self):
         cv2.destroyWindow(self.winname)

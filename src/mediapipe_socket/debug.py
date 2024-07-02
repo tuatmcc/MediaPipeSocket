@@ -1,34 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from numpy import array, ndarray
-
-from PIL import Image
+from numpy import ndarray
 import cv2
 import os
 
-filenames: list[str] = os.listdir("./src/images/")
 
+class Debugger:
+    def __init__(self, imageFolder: str = "./src/images/") -> None:
+        self.index: int = 0
+        self.images: list[ndarray] = []
+        self.LoadDebugImages(imageFolder)
 
-def loadDebugImages() -> list[ndarray]:
-    images: list[ndarray] = []
-    for name in filenames:
-        cvrawData = cv2.imread(f"./src/images/{name}")
-        cvrawData = cv2.cvtColor(cvrawData, cv2.COLOR_BGR2RGB)
+    def GetImage(self) -> ndarray:
+        return self.images[self.index]
 
-        print(cvrawData.shape)
-        rawData = Image.open(f"./src/images/{name}")
-        rawData = rawData.convert("RGB")
-        rawData = array(rawData)
-        print(rawData.shape)
-        images.append(cvrawData)
-    return images
+    def LoadDebugImages(self, folder: str):
+        images: list[str] = os.listdir(folder)
+        for image in images:
+            cvrawData = cv2.imread(f"./src/images/{image}")
+            cvrawData = cv2.cvtColor(cvrawData, cv2.COLOR_BGR2RGB)
+            self.images.append(cvrawData)
 
-
-def changeImage(index: int, length: int, key: int) -> int:
-    for i in range(length):
-        if key == 48 + i:
-            return i
-        else:
-            pass
-    return index
+    def UpdateImageIndex(self, key: int) -> None:
+        for i in range(len(self.images)):
+            if key == 48 + i:
+                self.index = i
+                break

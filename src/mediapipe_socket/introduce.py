@@ -5,33 +5,26 @@ from numpy import ndarray
 
 from visualizer import Visualizer
 
-filenames: list[str] = ["example.mp4"]
 
+class Introduction:
+    def __init__(
+        self, videoPath: str = "./mediapipe_socket/videos/example.mp4"
+    ) -> None:
+        self.visualizer = Visualizer(False)
+        self.video = cv2.VideoCapture(videoPath)
 
-def loadVideoFiles() -> list[cv2.VideoCapture]:
-    videos: list[cv2.VideoCapture] = []
-    pathbase: str = "videos/{}"
-    for name in filenames:
-        fmtpath = pathbase.format(name)
-        cap = cv2.VideoCapture(fmtpath)
-        videos.append(cap)
-    return videos
+    def Frame(self) -> ndarray:
+        ret, frame = self.video.read()
+        if not ret:
+            self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ret, frame = self.video.read()
+        return frame
 
+    def Update(self) -> None:
+        frame = self.Frame()
+        self.visualizer.image_output = frame
+        self.visualizer.show()
 
-def getFrame(videos: list[cv2.VideoCapture], index: int) -> tuple[ndarray, int]:
-    ret, frame = videos[index].read()
-    if not ret:
-        videos[index].set(cv2.CAP_PROP_POS_FRAMES, 0)
-        index += 1
-
-        if index > len(videos) - 1:
-            index = 0
-
-        ret, frame = videos[index].read()
-
-    return frame, index
-
-
-def showVideoFrame(frame: ndarray, visualizer: Visualizer) -> None:
-    visualizer.image_output = frame
-    visualizer.show()
+    def __del__(self) -> None:
+        self.video.release()
+        cv2.destroyAllWindows()

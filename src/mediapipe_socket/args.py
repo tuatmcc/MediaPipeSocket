@@ -3,7 +3,8 @@
 
 import tap as typed_argment_parser
 
-from client import HOST_ADDRESS
+
+HOST_ADDRESS: str = "127.0.0.1"
 
 
 class ArgParser(typed_argment_parser.Tap):
@@ -11,7 +12,10 @@ class ArgParser(typed_argment_parser.Tap):
 
     no_visualize: bool = False  # enable visualizations
     no_lpf: bool = False  # enable low pass filter
+    no_debug: bool = False  # enable debug mode
+    no_intro: bool = True  # enable intro
     device: int = 0  # camera device index
+    secondary_device: int = -1  # secondary camera device index
     width: int = 640  # camera capture width
     height: int = 480  # camera capture height
     ip_address: str = HOST_ADDRESS  # ip address to send messages to
@@ -22,9 +26,11 @@ class ArgParser(typed_argment_parser.Tap):
     enable_segmentation: bool = False  # enable segmentation
     segmentation_score_th: float = 0.5  # segmentation_score_threshold
     use_brect: bool = False  # use bounding rect
+    intro_video_path: str = ""  # introduce video path
+    debug_image_folder: str = ""  # debug image folder
 
 
-def get_args() -> ArgParser:
+def ParseArgs() -> ArgParser:
     """Get arguments from command line. Default values are used if not specified."""
 
     parser = ArgParser()
