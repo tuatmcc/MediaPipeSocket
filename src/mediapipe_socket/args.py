@@ -14,8 +14,7 @@ class ArgParser(typed_argment_parser.Tap):
     no_lpf: bool = False  # enable low pass filter
     no_debug: bool = False  # enable debug mode
     no_intro: bool = True  # enable intro
-    device: int = 0  # camera device index
-    secondary_device: int = -1  # secondary camera device index
+    device: int = -1  # camera device number
     width: int = 640  # camera capture width
     height: int = 480  # camera capture height
     ip_address: str = HOST_ADDRESS  # ip address to send messages to

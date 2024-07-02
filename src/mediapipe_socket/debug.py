@@ -19,7 +19,6 @@ class Debugger:
         images: list[str] = os.listdir(folder)
         for image in images:
             cvrawData = cv2.imread(f"./src/images/{image}")
-            cvrawData = cv2.cvtColor(cvrawData, cv2.COLOR_BGR2RGB)
             self.images.append(cvrawData)
 
     def UpdateImageIndex(self, key: int) -> None:

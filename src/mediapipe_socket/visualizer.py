@@ -21,9 +21,6 @@ class Visualizer:
         cv2.namedWindow(self.winname, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(self.winname, 1500, 750)
 
-    def __del__(self):
-        cv2.destroyWindow(self.winname)
-
     def show(self) -> None:
         if self.image_output is None:
             return

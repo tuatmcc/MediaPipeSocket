@@ -24,16 +24,11 @@ class MediaPipeSocketRunner:
     def __init__(self, args: ArgParser) -> None:
         self.argments: ArgParser = args
 
-        self.cam1 = cv2.VideoCapture(self.argments.device)
-        self.cam1.set(cv2.CAP_PROP_FRAME_WIDTH, self.argments.width)
-        self.cam1.set(cv2.CAP_PROP_FRAME_HEIGHT, self.argments.height)
+        cameras: list[int] = self.GetAvailableCameras()
+        if len(cameras) == 0:
+            raise ValueError("No camera detected.")
 
-        self.cam2: cv2.VideoCapture | None = None
-        if self.argments.secondary_device != -1:
-            print("Secondary camera detected.")
-            self.cam2 = cv2.VideoCapture(self.argments.secondary_device)
-            self.cam2.set(cv2.CAP_PROP_FRAME_WIDTH, self.argments.width)
-            self.cam2.set(cv2.CAP_PROP_FRAME_HEIGHT, self.argments.height)
+        self.camera: cv2.VideoCapture = self.GetCamera(cameras[0])
 
         self.capturingVisulalizer: Visualizer = Visualizer(self.argments.use_brect)
         self.filter: PoseLandmarkComposition = PoseLandmarkComposition()
@@ -48,32 +43,41 @@ class MediaPipeSocketRunner:
         self.oscClient: Client = CreateClient(args.ip_address, args.port)
         self.state: int = STATES.GAME
 
-        self.GetCameras()
         if not self.argments.no_intro:
             self.CreateIntroduce()
         if not self.argments.no_debug:
             self.CreateDebugger()
 
-    def GetCameras(self) -> None:
-        self.cam1 = cv2.VideoCapture(self.argments.device)
-        self.cam1.set(cv2.CAP_PROP_FRAME_WIDTH, self.argments.width)
-        self.cam1.set(cv2.CAP_PROP_FRAME_HEIGHT, self.argments.height)
+    def GetAvailableCameras(self) -> list[int]:
+        cameras: list[int] = []
 
-        if self.argments.secondary_device != -1:
-            self.cam2 = cv2.VideoCapture(self.argments.secondary_device)
-            self.cam2.set(cv2.CAP_PROP_FRAME_WIDTH, self.argments.width)
-            self.cam2.set(cv2.CAP_PROP_FRAME_HEIGHT, self.argments.height)
+        if self.argments.device != -1:
+            return [self.argments.device]
+
+        for camera_number in range(0, 10):
+            try:
+                cap = cv2.VideoCapture(camera_number)
+                ret, _ = cap.read()
+            except Exception:
+                ret = False
+
+            if ret:
+                cameras.append(camera_number)
+
+        return cameras
+
+    def GetCamera(self, device: int) -> cv2.VideoCapture:
+        return cv2.VideoCapture(device)
 
     def GetImage(self) -> ndarray:
         if self.debugger is not None and self.state == STATES.DEBUG:
             return self.debugger.GetImage()
 
-        ret, image = self.cam1.read()
+        ret, image = self.camera.read()
         if not ret:
             raise ValueError("No camera detected.")
 
         image = cv2.flip(image, 1)
-        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
         return image
 
     def CreateIntroduce(self) -> None:
@@ -92,7 +96,7 @@ class MediaPipeSocketRunner:
 
     def ApplyFilter(
         self, image: ndarray
-    ) -> Tuple[List[Landmark] | None, List[Landmark] | None]:
+    ) -> tuple[list[Landmark] | None, list[Landmark] | None]:
         landmarks: list[Landmark] | None = self.model.process(image)
         processed: list[Landmark] | None = copy.deepcopy(landmarks)
 
@@ -120,11 +124,14 @@ class MediaPipeSocketRunner:
 
     def Frame(self) -> bool:
         key: int = cv2.waitKey(1)
+        self.ChangeState(key)
+
         if self.introduce is not None:
             self.introduce.Update()
 
         image: ndarray = self.GetImage()
         copyImage: ndarray = image.copy()
+        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
         landmarks, processed = self.ApplyFilter(image)
         self.SendData(processed) if processed is not None else None
 
@@ -161,6 +168,4 @@ class MediaPipeSocketRunner:
                 print(err)
                 break
 
-        self.cam1.release()
-        if self.cam2 is not None:
-            self.cam2.release()
+        self.camera.release()
