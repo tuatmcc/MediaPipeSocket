@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from numpy import array, ndarray
+from numpy import array, ndarray, array_equal
 
-# from PIL import Image
-from cv2 import imread
+from PIL import Image
+import cv2
 import os
 
-filenames: list[str] = os.listdir("./src/images")
+filenames: list[str] = os.listdir("./src/images/")
 
 
 def loadDebugImages() -> list[ndarray]:
     images: list[ndarray] = []
     for name in filenames:
-        rawData = imread(f"./src/images/{name}")
-        images.append(array(rawData))
+        cvrawData = cv2.imread(f"./src/images/{name}")
+        print(cvrawData.shape)
+        rawData = Image.open(f"./src/images/{name}")
+        rawData = rawData.convert("RGB")
+        rawData = array(rawData)
+        # rawData = array(rawData[:, :, ::-1])
+        # print(rawData.shape)
+        # print(array_equal(rawData, cvrawData))
+        images.append(rawData)
     return images
 
 

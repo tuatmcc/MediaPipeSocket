@@ -209,13 +209,13 @@ def run_mediapipe_socket(args: ArgParser) -> None:
     while True:
         try:
             key = cv2.waitKey(1)
-            launchIntroduce(introVideos, videoVisualizer, videoIndex)
+            # launchIntroduce(introVideos, videoVisualizer, videoIndex)
 
             match state:
                 case STATES.DEBUG:
-                    imageIndex = changeImage(imageIndex, len(debugImages), key)
+                    index = changeImage(imageIndex, len(debugImages), key)
                     launchDebug(
-                        debugImages[imageIndex],
+                        debugImages[index],
                         visualizer,
                         pose,
                         pose_filter,
