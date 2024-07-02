@@ -19,10 +19,7 @@ class Visualizer:
         self.fps: GaussianFilter = GaussianFilter(30, 5)
 
         cv2.namedWindow(self.winname, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(self.winname, cv2.WINDOW_FULLSCREEN, cv2.WINDOW_NORMAL)
-
-    def __del__(self):
-        cv2.destroyWindow(self.winname)
+        cv2.resizeWindow(self.winname, 1500, 750)
 
     def show(self) -> None:
         if self.image_output is None:
@@ -267,9 +264,9 @@ class Visualizer:
                 cv2.line(image, landmark_point[17][1], landmark_point[19][1], color, 2)
             if (
                 landmark_point[19][0] > visibility_th
-                and landmark_point[21][0] > visibility_th
+                and landmark_point[15][0] > visibility_th
             ):
-                cv2.line(image, landmark_point[19][1], landmark_point[21][1], color, 2)
+                cv2.line(image, landmark_point[19][1], landmark_point[15][1], color, 2)
             if (
                 landmark_point[21][0] > visibility_th
                 and landmark_point[15][0] > visibility_th
@@ -289,9 +286,9 @@ class Visualizer:
                 cv2.line(image, landmark_point[18][1], landmark_point[20][1], color, 2)
             if (
                 landmark_point[20][0] > visibility_th
-                and landmark_point[22][0] > visibility_th
+                and landmark_point[16][0] > visibility_th
             ):
-                cv2.line(image, landmark_point[20][1], landmark_point[22][1], color, 2)
+                cv2.line(image, landmark_point[20][1], landmark_point[16][1], color, 2)
             if (
                 landmark_point[22][0] > visibility_th
                 and landmark_point[16][0] > visibility_th

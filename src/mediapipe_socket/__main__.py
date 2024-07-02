@@ -1,6 +1,7 @@
-from args import get_args
-from runner import run_mediapipe_socket
+from args import ArgParser, ParseArgs
+from runner import MediaPipeSocketRunner
 
 if __name__ == "__main__":
-    args = get_args()
-    run_mediapipe_socket(args)
+    args: ArgParser = ParseArgs()
+    runner: MediaPipeSocketRunner = MediaPipeSocketRunner(args)
+    runner.Run()

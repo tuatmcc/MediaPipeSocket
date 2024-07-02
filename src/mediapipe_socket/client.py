@@ -2,7 +2,7 @@ from pythonosc.osc_message import OscMessage
 from pythonosc.osc_message_builder import OscMessageBuilder
 from pythonosc.udp_client import UDPClient
 
-HOST_ADDRESS: str = "127.0.0.1"
+from args import HOST_ADDRESS
 
 
 class Client:
@@ -16,3 +16,7 @@ class Client:
         self.builder.add_arg(data)
         msg: OscMessage = self.builder.build()
         self.client.send(msg)
+
+
+def CreateClient(addr: str = HOST_ADDRESS, port: int = 8080) -> Client:
+    return Client(addr, port)

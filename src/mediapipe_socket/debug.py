@@ -1,30 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List
-
-from numpy import array, ndarray
-from PIL import Image
-
-filenames: List[str] = [
-    "T-pose.png",
-    "X-pose.png"
-]
+from numpy import ndarray
+import cv2
+import os
 
 
-def loadDebugImages() -> List[ndarray]:
-    images: list[ndarray] = []
-    for name in filenames:
-        rawData = Image.open("src/mediapipe_socket/debugImages/{}".format(name))
-        rawData = rawData.convert("RGB")
-        images.append(array(rawData))
-    return images
+class Debugger:
+    def __init__(self, imageFolder: str = "./src/images/") -> None:
+        self.index: int = 0
+        self.images: list[ndarray] = []
+        self.LoadDebugImages(imageFolder)
 
+    def GetImage(self) -> ndarray:
+        return self.images[self.index]
 
-def changeImage(index: int, length: int, key: int) -> int:
-    for i in range(length):
-        if key == 48 + i:
-            return i
-        else:
-            pass
-    return index
+    def LoadDebugImages(self, folder: str):
+        images: list[str] = os.listdir(folder)
+        for image in images:
+            cvrawData = cv2.imread(f"./src/images/{image}")
+            self.images.append(cvrawData)
+
+    def UpdateImageIndex(self, key: int) -> None:
+        for i in range(len(self.images)):
+            if key == 48 + i:
+                self.index = i
+                break

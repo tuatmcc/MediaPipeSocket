@@ -2,250 +2,170 @@
 # -*- coding: utf-8 -*-
 
 import copy
-from typing import List, Tuple
-
 import cv2
 from numpy import ndarray
 
 from args import ArgParser
-from client import Client
-from debug import changeImage, loadDebugImages
-from filters import PoseLandmarkComposition
-from introduce import getFrame, loadVideoFiles, showVideoFrame
-from mediapipe_wrapper import Landmark, MediaPipePose
+from client import Client, CreateClient
+from debug import Debugger
+from introduce import Introduction
 from visualizer import Visualizer
+from filters import PoseLandmarkComposition
+from mediapipe_wrapper import Landmark, MediaPipePose
 
 
 class STATES:
-    VIDEO: int = 0
-    DEBUG: int = 1
-    GAME: int = 2
+    DEBUG: int = 0
+    GAME: int = 1
+    QUIT: int = 2
 
 
-def getCamera(capDevice: int, capWidth: int, capHeight: int) -> cv2.VideoCapture:
-    # カメラ
-    cap = cv2.VideoCapture(capDevice)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, capWidth)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, capHeight)
-    return cap
+class MediaPipeSocketRunner:
+    def __init__(self, args: ArgParser) -> None:
+        self.argments: ArgParser = args
 
+        cameras: list[int] = self.GetAvailableCameras()
+        if len(cameras) == 0:
+            raise ValueError("No camera detected.")
 
-def getVideo(file: str, capWidth: int, capHeight: int) -> cv2.VideoCapture:
-    # 紹介動画
-    path: str = "mediapipe_socket/videos/{}".format(file)
-    cap = cv2.VideoCapture(path)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, capWidth)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, capHeight)
-    return cap
+        self.camera: cv2.VideoCapture = self.GetCamera(cameras[0])
 
+        self.capturingVisulalizer: Visualizer = Visualizer(self.argments.use_brect)
+        self.filter: PoseLandmarkComposition = PoseLandmarkComposition()
+        self.model: MediaPipePose = MediaPipePose(
+            model_complexity=self.argments.model_complexity,
+            enable_segmentation=self.argments.enable_segmentation,
+            min_detection_confidence=self.argments.min_detection_confidence,
+            min_tracking_confidence=self.argments.min_tracking_confidence,
+        )
+        self.introduce: Introduction | None = None
+        self.debugger: Debugger | None = None
+        self.oscClient: Client = CreateClient(args.ip_address, args.port)
+        self.state: int = STATES.GAME
 
-def getImage(camera: cv2.VideoCapture) -> Tuple[ndarray, ndarray]:
-    ret, image = camera.read()
-    if not ret:
-        raise ValueError("No camera detected.")
+        if not self.argments.no_intro:
+            self.CreateIntroduce()
+        if not self.argments.no_debug:
+            self.CreateDebugger()
 
-    image = cv2.flip(image, 1)
-    debugImage = image.copy()
-    image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
-    return image, debugImage
+    def GetAvailableCameras(self) -> list[int]:
+        cameras: list[int] = []
 
+        if self.argments.device != -1:
+            return [self.argments.device]
 
-def applyFilter(
-    pose: MediaPipePose,
-    image: ndarray,
-    filter: PoseLandmarkComposition | None,
-    noLPF: bool,
-) -> Tuple[List[Landmark] | None, List[Landmark] | None]:
-    # 検出実施 #############################################################
-    landmarks: list[Landmark] | None = pose.process(image)
-    processed_landmarks: list[Landmark] | None = None
+        for camera_number in range(0, 10):
+            try:
+                cap = cv2.VideoCapture(camera_number)
+                ret, _ = cap.read()
+            except Exception:
+                ret = False
 
-    if landmarks is None:
-        return None, None
-    else:
-        processed_landmarks: list[Landmark] | None = copy.deepcopy(landmarks)
+            if ret:
+                cameras.append(camera_number)
 
-    if not noLPF:
-        # フィルタ適用 #######################################################
-        if filter is not None:
-            processed_landmarks = filter.update(processed_landmarks)
+        return cameras
 
-    return landmarks, processed_landmarks
+    def GetCamera(self, device: int) -> cv2.VideoCapture:
+        return cv2.VideoCapture(device)
 
+    def GetImage(self) -> ndarray:
+        if self.debugger is not None and self.state == STATES.DEBUG:
+            return self.debugger.GetImage()
 
-def sendData(data: list[Landmark], client: Client) -> None:
-    converted: list[list[float]] = [
-        [landmark["x"], landmark["y"], landmark["z"], landmark["visibility"]]
-        for landmark in data
-    ]
-    client.Send(converted)
+        ret, image = self.camera.read()
+        if not ret:
+            raise ValueError("No camera detected.")
 
+        image = cv2.flip(image, 1)
+        return image
 
-def draw(
-    visualizer: Visualizer | None,
-    debugImage: ndarray,
-    landmarks: List[Landmark] | None,
-    processed: List[Landmark],
-    noLPF: bool,
-) -> None:
-    if visualizer is None:
-        return None
+    def CreateIntroduce(self) -> None:
+        path: str = self.argments.intro_video_path
+        if path == "":
+            self.introduce = Introduction()
+        else:
+            self.introduce = Introduction(path)
 
-    if landmarks is not None:
-        # オリジナル
-        visualizer.update(debugImage, landmarks, (0, 255, 0))
+    def CreateDebugger(self) -> None:
+        path: str = self.argments.debug_image_folder
+        if path == "":
+            self.debugger = Debugger()
+        else:
+            self.debugger = Debugger(path)
 
-    if not noLPF:
-        # フィルタ適用後
-        visualizer.update(debugImage, processed, (255, 0, 0))
+    def ApplyFilter(
+        self, image: ndarray
+    ) -> tuple[list[Landmark] | None, list[Landmark] | None]:
+        landmarks: list[Landmark] | None = self.model.process(image)
+        processed: list[Landmark] | None = copy.deepcopy(landmarks)
 
-    visualizer.display_fps(debugImage)
-    visualizer.show()
+        if not self.argments.no_lpf:
+            processed = self.filter.update(processed) if processed is not None else None
 
+        return landmarks, processed
 
-def changeMode(key: int) -> int | None:
-    if key == 100:  # D
-        return STATES.DEBUG
-    elif key == 114:  # R
-        return STATES.GAME
-    else:
-        return None
+    def SendData(self, data: list[Landmark]) -> None:
+        converted: list[list[float]] = [
+            [landmark["x"], landmark["y"], landmark["z"], landmark["visibility"]]
+            for landmark in data
+        ]
+        self.oscClient.Send(converted)
 
+    def ChangeState(self, key: int) -> None:
+        if key == 27:  # ESC
+            self.state = STATES.QUIT
+        elif not self.argments.no_debug and key == 100:  # D
+            self.state = STATES.DEBUG
+        elif key == 114:  # R
+            self.state = STATES.GAME
+        else:
+            pass
 
-def exitLoop(key: int) -> bool:
-    # キー処理(ESC：終了) ############################################
-    if key == 27:  # ESC
-        print("exit")
-        return True
-    else:
-        return False
+    def Frame(self) -> bool:
+        key: int = cv2.waitKey(1)
+        self.ChangeState(key)
 
+        if self.introduce is not None:
+            self.introduce.Update()
 
-def launchDebug(
-    image: ndarray,
-    visualizer: Visualizer | None,
-    pose: MediaPipePose,
-    filter: PoseLandmarkComposition | None,
-    client: Client,
-    noLPF: bool,
-) -> None:
-    debugImage: ndarray = image.copy()
-    landmarks, processed = applyFilter(pose, image, filter, noLPF)
+        image: ndarray = self.GetImage()
+        copyImage: ndarray = image.copy()
+        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+        landmarks, processed = self.ApplyFilter(image)
+        self.SendData(processed) if processed is not None else None
 
-    if processed is not None:
-        sendData(processed, client)
-        draw(visualizer, debugImage, landmarks, processed, noLPF)
+        match self.state:
+            case STATES.DEBUG | STATES.GAME:
+                if self.debugger is not None:
+                    self.debugger.UpdateImageIndex(key)
 
+                if landmarks is not None:
+                    self.capturingVisulalizer.update(copyImage, landmarks, (0, 255, 0))
 
-def launchCamera(
-    camera: cv2.VideoCapture,
-    visualizer: Visualizer | None,
-    pose: MediaPipePose,
-    filter: PoseLandmarkComposition | None,
-    client: Client,
-    noLPF: bool,
-) -> None:
-    # カメラキャプチャ #####################################################
-    image, debugImage = getImage(camera)
-    landmarks, processed_landmarks = applyFilter(pose, image, filter, noLPF)
+                if processed is not None and not self.argments.no_lpf:
+                    self.capturingVisulalizer.update(copyImage, processed, (255, 0, 0))
 
-    if processed_landmarks is not None:
-        sendData(processed_landmarks, client)
-        draw(visualizer, debugImage, landmarks, processed_landmarks, noLPF)
+            case STATES.QUIT:
+                return False
 
-
-def launchIntroduce(
-    videos: list[cv2.VideoCapture], visualizer: Visualizer, index: int
-) -> int:
-    frame, index = getFrame(videos, index)
-    showVideoFrame(frame, visualizer)
-    return index
-
-
-def run_mediapipe_socket(args: ArgParser) -> None:
-    # 引数解析
-    no_visualize: bool = args.no_visualize
-    no_lpf: bool = args.no_lpf
-
-    model_complexity: int = args.model_complexity
-    min_detection_confidence: float = args.min_detection_confidence
-    min_tracking_confidence: float = args.min_tracking_confidence
-    enable_segmentation: bool = args.enable_segmentation
-    use_brect: bool = args.use_brect
-
-    # Load debug images
-    debugImages: List[ndarray] = loadDebugImages()
-
-    # Load intro videos
-    introVideos: list[cv2.VideoCapture] = loadVideoFiles()
-
-    # UDP Client (for sending data)
-    udpClient = Client(args.ip_address, args.port)
-
-    # カメラ
-    camera: cv2.VideoCapture = getCamera(args.device, args.width, args.height)
-
-    # ビジュアライザ
-    visualizer = Visualizer(use_brect) if not no_visualize else None
-
-    # Video visualizer
-    videoVisualizer = Visualizer(False, "Intro video")
-
-    # ポーズ用のローパスフィルタ
-    pose_filter = PoseLandmarkComposition() if not no_lpf else None
-
-    # モデルロード
-    pose = MediaPipePose(
-        model_complexity=model_complexity,
-        enable_segmentation=enable_segmentation,
-        min_detection_confidence=min_detection_confidence,
-        min_tracking_confidence=min_tracking_confidence,
-    )
-
-    state: int = STATES.GAME
-    imageIndex: int = 0
-    videoIndex: int = 0
-
-    while True:
-        try:
-            key = cv2.waitKey(1)
-            launchIntroduce(introVideos, videoVisualizer, videoIndex)
-
-            match state:
-                case STATES.DEBUG:
-                    index = changeImage(imageIndex, len(debugImages), key)
-                    launchDebug(
-                        debugImages[index],
-                        visualizer,
-                        pose,
-                        pose_filter,
-                        udpClient,
-                        no_lpf,
-                    )
-
-                case STATES.GAME:
-                    launchCamera(
-                        camera, visualizer, pose, pose_filter, udpClient, no_lpf
-                    )
-
-                case _:
-                    pass
-
-            s = changeMode(key)
-            if s is None:
+            case _:
                 pass
-            else:
-                state = s
 
-            # キー処理(ESC：終了) ############################################
-            if exitLoop(key):
+        self.capturingVisulalizer.display_fps(copyImage)
+        self.capturingVisulalizer.show()
+        return True
+
+    def Run(self) -> None:
+        while True:
+            try:
+                if not self.Frame():
+                    break
+            except KeyboardInterrupt:
+                print("KeyboardInterrupt")
+                break
+            except Exception as err:
+                print(err)
                 break
 
-        except KeyboardInterrupt:
-            print("KeyboardInterrupt")
-            break
-        except Exception as err:
-            print(err)
-            break
-
-    camera.release()
+        self.camera.release()
