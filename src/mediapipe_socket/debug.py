@@ -14,7 +14,7 @@ def loadDebugImages() -> list[ndarray]:
     images: list[ndarray] = []
     for name in filenames:
         cvrawData = cv2.imread(f"./src/images/{name}")
-        # cvrawData = cv2.cvtColor(cvrawData, cv2.COLOR_BGR2RGB)
+        cvrawData = cv2.cvtColor(cvrawData, cv2.COLOR_BGR2RGB)
 
         print(cvrawData.shape)
         rawData = Image.open(f"./src/images/{name}")
