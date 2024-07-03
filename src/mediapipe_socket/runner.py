@@ -183,19 +183,8 @@ class MediaPipeSocketRunner:
 
     def Run(self) -> None:
         while True:
-            try:
-                ret = self.Frame()  # 1フレーム分の処理
-                if not ret:
-                    self.camera.release()  # カメラの解放
-                    cv2.destroyAllWindows()
-                    sys.exit(0)
-            except KeyboardInterrupt:
-                print("KeyboardInterrupt")
-                self.camera.release()  # カメラの解放
-                cv2.destroyAllWindows()
-                sys.exit(0)
-            except Exception as err:
-                print(err)
+            ret = self.Frame()  # 1フレーム分の処理
+            if not ret:
                 self.camera.release()  # カメラの解放
                 cv2.destroyAllWindows()
                 sys.exit(0)
