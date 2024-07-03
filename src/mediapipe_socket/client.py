@@ -6,6 +6,10 @@ from args import HOST_ADDRESS
 
 
 class Client:
+    """
+    OSC Client for sending pose data to the Unity side.
+    """
+
     def __init__(self, addr: str = HOST_ADDRESS, port: int = 8080) -> None:
         self.address: str = "/pose"
         self.builder: OscMessageBuilder = OscMessageBuilder(self.address)
@@ -19,4 +23,7 @@ class Client:
 
 
 def CreateClient(addr: str = HOST_ADDRESS, port: int = 8080) -> Client:
+    """
+    Create a new OSC client.
+    """
     return Client(addr, port)

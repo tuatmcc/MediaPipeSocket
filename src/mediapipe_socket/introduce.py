@@ -7,10 +7,17 @@ from visualizer import Visualizer
 
 
 class Introduction:
+    """
+    紹介動画を再生するクラス
+    """
+
     def __init__(
         self, videoPath: str = "./mediapipe_socket/videos/example.mp4"
     ) -> None:
-        self.visualizer = Visualizer(False)
+        """
+        videoPath: 紹介動画のパス(pyproject.tomlからの相対パス)
+        """
+        self.visualizer = Visualizer(False, "Introduction")
         self.video = cv2.VideoCapture(videoPath)
 
     def Frame(self) -> ndarray:
@@ -27,4 +34,3 @@ class Introduction:
 
     def __del__(self) -> None:
         self.video.release()
-        cv2.destroyAllWindows()
