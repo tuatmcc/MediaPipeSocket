@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import cv2
 import tap as typed_argment_parser
 
 
@@ -16,8 +15,8 @@ class ArgParser(typed_argment_parser.Tap):
     no_debug: bool = False  # enable debug mode
     no_intro: bool = True  # enable intro
     device: int = -1  # camera device number
-    width: int = cv2.WINDOW_AUTOSIZE  # camera capture width
-    height: int = cv2.WINDOW_AUTOSIZE  # camera capture height
+    width: int = 640  # camera capture width
+    height: int = 480  # camera capture height
     ip_address: str = HOST_ADDRESS  # ip address to send messages to
     port: int = 8080  # target UDP port
     model_complexity: int = 1  # model complexity (0, 1(default), 2)

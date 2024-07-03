@@ -19,7 +19,7 @@ class Visualizer:
         self.fps: GaussianFilter = GaussianFilter(30, 5)
 
         cv2.namedWindow(self.winname, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(self.winname, cv2.WINDOW_AUTOSIZE, cv2.WINDOW_AUTOSIZE)
+        cv2.resizeWindow(self.winname, cv2.WINDOW_NORMAL, cv2.WINDOW_NORMAL)
 
     def show(self) -> None:
         if self.image_output is None:
