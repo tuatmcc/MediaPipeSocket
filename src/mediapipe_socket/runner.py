@@ -3,6 +3,7 @@
 
 import copy
 import cv2
+import sys
 from numpy import ndarray
 
 from args import ArgParser
@@ -187,12 +188,16 @@ class MediaPipeSocketRunner:
         while True:
             try:
                 if not self.Frame():  # 1フレーム分の処理
-                    break
+                    self.camera.release()  # カメラの解放
+                    cv2.destroyAllWindows()
+                    sys.exit(0)
             except KeyboardInterrupt:
                 print("KeyboardInterrupt")
-                break
+                self.camera.release()  # カメラの解放
+                cv2.destroyAllWindows()
+                sys.exit(0)
             except Exception as err:
                 print(err)
-                break
-
-        self.camera.release()  # カメラの解放
+                self.camera.release()  # カメラの解放
+                cv2.destroyAllWindows()
+                sys.exit(0)
