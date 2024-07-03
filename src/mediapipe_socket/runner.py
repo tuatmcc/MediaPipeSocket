@@ -59,9 +59,6 @@ class MediaPipeSocketRunner:
         if not self.argments.no_debug:  # デバッグが有効
             self.CreateDebugger()
 
-    def __del__(self) -> None:
-        cv2.destroyAllWindows()
-
     def GetAvailableCameras(self) -> list[int]:
         """
         画像を取得可能なカメラのリストを取得する(最大10台まで)
@@ -187,7 +184,8 @@ class MediaPipeSocketRunner:
     def Run(self) -> None:
         while True:
             try:
-                if not self.Frame():  # 1フレーム分の処理
+                ret = self.Frame()  # 1フレーム分の処理
+                if not ret:
                     self.camera.release()  # カメラの解放
                     cv2.destroyAllWindows()
                     sys.exit(0)
